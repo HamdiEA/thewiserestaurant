@@ -29,10 +29,10 @@ const Footer = () => {
               The Wise
             </div>
             <p className="text-white/80">
-              Restaurant & Brunch
+              Restaurant
             </p>
             <p className="text-white/70 text-sm">
-              Choose Your Food Wisely - Experience exceptional cuisine across our three locations in Tunisia.
+              Choisissez Votre Nourriture Sagement - Découvrez une cuisine exceptionnelle dans nos trois emplacements en Tunisie.
             </p>
           </div>
 
@@ -64,11 +64,11 @@ const Footer = () => {
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Clock className="h-4 w-4 text-restaurant-red-light" />
             <span className="text-white/80 text-sm">
-              Open Daily | Hours may vary by location
+              Ouvert Tous les Jours | Les horaires peuvent varier selon l'emplacement
             </span>
           </div>
           <p className="text-white/60 text-sm">
-            © 2024 The Wise Restaurant. All rights reserved.
+            © 2024 The Wise Restaurant. Tous droits réservés.
           </p>
         </div>
       </div>

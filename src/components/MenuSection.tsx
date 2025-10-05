@@ -156,7 +156,6 @@ const MenuSection = () => {
   const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const pizzaSizesData = {
-  {
   "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
   "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4 m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
   "4 Seasons: Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate": { "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
@@ -187,8 +186,6 @@ const MenuSection = () => {
   "Van der Waals: Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
   "Tesla: Suprême de Poulet Fumé, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
   "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
-  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
-  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
 
 }
 

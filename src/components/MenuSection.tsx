@@ -156,101 +156,39 @@ const MenuSection = () => {
   const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const pizzaSizesData = {
-   {
-  "Margherita: Sauce Tomate, Mozzarella": {
-    "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4m": 12, "1/2 mètre": 13, "1 mètre": 17
-  },
-  "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4m": 14.5, "1/2 mètre": 22, "1 mètre": 32
-  },
-  "4 Seasons: Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate": {
-    "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60
-  },
-  "Vegetarien: Champignons, Poivrons, Oignons, Olives, Tomates Fraîches, Mozzarella, Sauce Tomate": {
-    "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32
-  },
-  "Queen: Jambon de Dinde, Champignons, Mozzarella, Sauce Tomate": {
-    "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28
-  },
-  "Orientale: Merguez, Poivrons, Oignons, Champignons, Tomates Fraîches, Sauce Tomate, Mozzarella": {
-    "Petite": 12, "Moyenne": 17.5, "Grande": 23, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 24
-  },
-  "Pepperoni: Pepperoni, Oignons, Sauce Tomate, Mozzarella": {
-    "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32
-  },
-  "Shrimp: Crevettes, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60
-  },
-  "4 Cheese: Sauce Tomate, Mozzarella, Fromage, Sauce Blanche": {
-    "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32
-  },
-  "Regina: Jambon de Dinde, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28
-  },
-  "Chicken Grill: Émincés de Poulet Grillés, Poivrons, Champignons, Oignons, Sauce Tomate, Mozzarella": {
-    "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 14, "1/2 mètre": 28, "1 mètre": 56
-  },
-  "Mexicain: Poivrons, Piments Jalapeños, Champignons, Oignons, Tomates, Sauce Tomate, Mozzarella": {
-    "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 15, "1/2 mètre": 29, "1 mètre": 58
-  },
-  "Kentucky: Poulet Kentucky, Champignons, Oignons, Poivrons, Tomates, Sauce Tomate, Mozzarella": {
-    "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60
-  },
-  "Norwegian: Saumon Fumé, Crème Fraîche, Mozzarella": {
-    "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Sea Food: Fruits de Mer, Poivrons, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Newton: Poulet Grillé, Poulet Pané, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": {
-    "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4m": 17.5, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Einstein: Viande de Bœuf Hachée, Champignons, Tomates Fraîches, Oignons, Sauce Tomate, Mozzarella": {
-    "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4m": 17.5, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Barlow: Viande de Bœuf Hachée, Jambon, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": {
-    "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4m": 17.5, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Millikan: Anchois, Filet de Sardine, Olives, Poivrons, Sauce Tomate, Mozzarella": {
-    "Petite": 17.5, "Moyenne": 25, "Grande": 37, "1/4m": 19, "1/2 mètre": 37, "1 mètre": 74
-  },
-  "Ampere: Pepperoni, Viande de Bœuf Hachée, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 17.5, "Moyenne": 25, "Grande": 37, "1/4m": 19, "1/2 mètre": 37, "1 mètre": 74
-  },
-  "Gauss: Thon, Œuf, Roquefort, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 16.5, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "John Locke: Poulet Pané, Sauce Piquante, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 16.5, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "Pesto: Sauce Pesto, Mozzarella, Pepperoni": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 16.5, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "Chicken Spicy: Poulet Pané, Sauce Piquante, Poivrons, Oignons, Olives, Champignons, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 16.5, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "Carnot: Gruyère, Oignons, Poivrons, Champignons, Sauce Tomate, Mozzarella": {
-    "Petite": 15.5, "Moyenne": 25, "Grande": 35, "1/4m": 17.5, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Mariotte: Poulet Pané, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": {
-    "Petite": 15.5, "Moyenne": 25, "Grande": 35, "1/4m": 17.5, "1/2 mètre": 35, "1 mètre": 70
-  },
-  "Kepler: Crevettes, Champignons, Oignons, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 24, "Grande": 34, "1/4m": 17, "1/2 mètre": 34, "1 mètre": 68
-  },
-  "Van der Waals: Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 16.5, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "Tesla: Suprême de Poulet Fumé, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 17, "1/2 mètre": 33, "1 mètre": 66
-  },
-  "Chicken Supreme: Suprême de Poulet Fumé, Oignons, Poivrons, Champignons, Sauce Tomate, Mozzarella": {
-    "Petite": 15, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 32, "1 mètre": 64
-  },
-  "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": {
-    "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4m": 17, "1/2 mètre": 33, "1 mètre": 66
-  }
+  {
+  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
+  "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4 m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
+  "4 Seasons: Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate": { "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
+  "Vegetarien: Champignons, Poivrons, Oignons, Olives, Tomates Fraîches, Mozzarella, Sauce Tomate": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+  "Queen: Jambon de Dinde, Champignons, Mozzarella, Sauce Tomate": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
+  "Orientale: Merguez, Poivrons, Oignons, Champignons, Tomates Fraîches, Sauce Tomate, Mozzarella": { "Petite": 12, "Moyenne": 17.5, "Grande": 23, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 24 },
+  "Pepperoni: Pepperoni, Oignons, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+  "Shrimp: Crevettes, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
+  "4 Cheese: Sauce Tomate, Mozzarella, Fromage, Sauce Blanche": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+  "Regina: Jambon de Dinde, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
+  "Chicken Grill: Émincés de Poulet Grillés, Poivrons, Champignons, Oignons, Sauce Tomate, Mozzarella": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
+  "Mexicain: Poivrons, Piments Jalapeños, Champignons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4 m": 15, "1/2 mètre": 29, "1 mètre": 58 },
+  "Kentucky: Poulet Kentucky, Champignons, Oignons, Poivrons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
+  "Norwegian: Saumon Fumé, Crème Fraîche, Mozzarella": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
+  "Sea Food: Fruits de Mer, Poivrons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
+  "Newton: Poulet Grillé, Poulet Pané, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+  "Einstein: Viande de Bœuf Hachée, Champignons, Tomates Fraîches, Oignons, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+  "Barlow: Viande de Bœuf Hachée, Jambon, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "Grande": 34, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+  "Millikan: Anchois, Filet de Sardine, Olives, Poivrons, Sauce Tomate, Mozzarella": { "Petite": 17.5, "Moyenne": 25, "Grande": 37, "1/4 m": 19, "1/2 mètre": 37, "1 mètre": 74 },
+  "Ampere: Pepperoni, Viande de Bœuf Hachée, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": { "Petite": 17.5, "Moyenne": 25, "Grande": 37, "1/4 m": 19, "1/2 mètre": 37, "1 mètre": 74 },
+  "Gauss: Thon, Œuf, Roquefort, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+  "John Locke: Poulet Pané, Sauce Piquante, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+  "Pesto: Sauce Pesto, Mozzarella, Pepperoni": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+  "Chicken Spicy: Poulet Pané, Sauce Piquante, Poivrons, Oignons, Olives, Champignons, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+  "Carnot: Gruyère, Oignons, Poivrons, Champignons, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 25, "Grande": 35, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+  "Mariotte: Poulet Pané, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 25, "Grande": 35, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+  "Kepler: Crevettes, Champignons, Oignons, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 24, "Grande": 34, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 },
+  "Van der Waals: Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+  "Tesla: Suprême de Poulet Fumé, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
+  "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 }
 }
+
 
 
   const menuCategories = [

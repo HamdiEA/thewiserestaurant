@@ -12,9 +12,10 @@ interface OrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orderItems: Array<{ name: string; quantity: number; price: string }>;
+  totalPrice?: number;
 }
 
-const OrderDialog = ({ open, onOpenChange, orderItems }: OrderDialogProps) => {
+const OrderDialog = ({ open, onOpenChange, orderItems, totalPrice }: OrderDialogProps) => {
   const locations = [
     { name: "Bardo Tunis", phone: "52 555 414" },
     { name: "Ben Arous Tunis", phone: "94 722 566" },
@@ -42,34 +43,43 @@ const OrderDialog = ({ open, onOpenChange, orderItems }: OrderDialogProps) => {
             <h4 className="font-semibold mb-2">Votre sélection:</h4>
             <ul className="space-y-1 text-sm">
               {orderItems.map((item, index) => (
-                <li key={index}>
-                  {item.quantity}x {item.name}
+                <li key={index} className="flex justify-between">
+                  <span>{item.quantity}x {item.name}</span>
+                  <span className="font-semibold">{item.price}</span>
                 </li>
               ))}
             </ul>
+            {totalPrice !== undefined && (
+              <div className="mt-3 pt-3 border-t border-border flex justify-between font-bold text-lg text-restaurant-red">
+                <span>Total:</span>
+                <span>{totalPrice.toFixed(2)}dt</span>
+              </div>
+            )}
           </div>
         )}
 
         <div className="space-y-3">
           {locations.map((location, index) => (
-            <a
+            <Button
               key={index}
-              href={`tel:${location.phone.replace(/\s/g, '')}`}
-              className="block"
+              variant="outline"
+              className="w-full justify-start h-auto py-4 hover:bg-restaurant-red hover:text-white transition-all duration-300 glow-on-hover"
+              onClick={() => {
+                if (typeof window !== 'undefined' && 'ontouchstart' in window) {
+                  window.location.href = `tel:${location.phone.replace(/\s/g, '')}`;
+                } else {
+                  navigator.clipboard.writeText(location.phone);
+                }
+              }}
             >
-              <Button
-                variant="outline"
-                className="w-full justify-start h-auto py-4 hover:bg-restaurant-red hover:text-white transition-all duration-300 glow-on-hover"
-              >
-                <div className="flex items-center w-full">
-                  <Phone className="h-5 w-5 mr-3 flex-shrink-0" />
-                  <div className="text-left">
-                    <div className="font-semibold">{location.name}</div>
-                    <div className="text-sm opacity-80">{location.phone}</div>
-                  </div>
+              <div className="flex items-center w-full">
+                <Phone className="h-5 w-5 mr-3 flex-shrink-0" />
+                <div className="text-left">
+                  <div className="font-semibold">{location.name}</div>
+                  <div className="text-sm opacity-80">{location.phone}</div>
                 </div>
-              </Button>
-            </a>
+              </div>
+            </Button>
           ))}
         </div>
 

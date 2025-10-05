@@ -186,7 +186,10 @@ const MenuSection = () => {
   "Kepler: Crevettes, Champignons, Oignons, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 24, "Grande": 34, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 },
   "Van der Waals: Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
   "Tesla: Suprême de Poulet Fumé, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
-  "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 }
+  "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": { "Petite": 15, "Moyenne": 23, "Grande": 33, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
+  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
+  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
+
 }
 
 

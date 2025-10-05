@@ -158,6 +158,7 @@ const MenuSection = () => {
   const pizzaSizesData = {
     "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4m": 12, "1/2 mètre": 13, "1 mètre": 17 },
     "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
+    "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
     "4 Seasons: Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate ": { "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60 },
     "Vegetarien: Champignons, Poivrons, Oignons, Olives, Tomates Fraîches, Mozzarella, Sauce Tomate": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
     "Queen: Jambon de Dinde, Champignons, Mozzarella, Sauce Tomate": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28 },

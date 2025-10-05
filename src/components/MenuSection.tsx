@@ -3,7 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import OrderDialog from "./OrderDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Food images
 import saladImg from "@/assets/salad.jpg";
@@ -13,22 +21,173 @@ import pizza2Img from "@/assets/pizza2.jpg";
 import burgerImg from "@/assets/burger.jpg";
 import drinkImg from "@/assets/drink.jpg";
 
-const MenuSection = () => {
-  const [orderItems, setOrderItems] = useState<Record<string, number>>({});
-  const [showOrderDialog, setShowOrderDialog] = useState(false);
+interface OrderItem {
+  name: string;
+  size?: string;
+  price: number;
+}
 
-  const handleQuantityChange = (itemName: string, delta: number) => {
-    setOrderItems(prev => {
-      const newQuantity = (prev[itemName] || 0) + delta;
-      if (newQuantity <= 0) {
-        const { [itemName]: _, ...rest } = prev;
-        return rest;
+const MenuSection = () => {
+  const [orderItems, setOrderItems] = useState<Record<string, OrderItem & { quantity: number }>>({});
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
+  const [pizzaSizes, setPizzaSizes] = useState<Record<string, string>>({});
+  const [quarterMeterPizzas, setQuarterMeterPizzas] = useState<string[]>([]);
+  const { toast } = useToast();
+
+  const handlePizzaOrder = (pizzaName: string, sizes: any) => {
+    const selectedSize = pizzaSizes[pizzaName];
+    
+    if (!selectedSize) {
+      toast({
+        title: "Veuillez sélectionner une taille",
+        description: "Choisissez la taille de votre pizza",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const price = sizes[selectedSize];
+    
+    // Handle 1/4m orders differently
+    if (selectedSize === "1/4m") {
+      // Check if this pizza is already in the 1/4m selection
+      if (quarterMeterPizzas.includes(pizzaName)) {
+        toast({
+          title: "Déjà ajouté",
+          description: `${pizzaName} est déjà dans votre sélection 1/4m`,
+          variant: "destructive",
+        });
+        return;
       }
-      return { ...prev, [itemName]: newQuantity };
+      
+      // Add to quarter meter selection
+      setQuarterMeterPizzas(prev => [...prev, pizzaName]);
+      
+      toast({
+        title: "Pizza 1/4m ajoutée",
+        description: `${pizzaName} ajouté (${quarterMeterPizzas.length + 1}/4 pizzas sélectionnées)`,
+      });
+      return;
+    }
+    
+    const itemKey = `${pizzaName} (${selectedSize})`;
+    
+    setOrderItems(prev => {
+      const existing = prev[itemKey];
+      if (existing) {
+        return { ...prev, [itemKey]: { ...existing, quantity: existing.quantity + 1 } };
+      }
+      return { ...prev, [itemKey]: { name: pizzaName, size: selectedSize, price, quantity: 1 } };
+    });
+
+    toast({
+      title: "Ajouté au panier",
+      description: `${pizzaName} ajouté`,
     });
   };
 
-  const totalItems = Object.values(orderItems).reduce((sum, qty) => sum + qty, 0);
+  const handleQuantityChange = (itemKey: string, item: any, delta: number, isDirectPrice: boolean = false) => {
+    if (!isDirectPrice) return; // Only allow direct price items for now
+    
+    setOrderItems(prev => {
+      const existing = prev[itemKey];
+      if (existing) {
+        const newQuantity = existing.quantity + delta;
+        if (newQuantity <= 0) {
+          const { [itemKey]: _, ...rest } = prev;
+          return rest;
+        }
+        return { ...prev, [itemKey]: { ...existing, quantity: newQuantity } };
+      } else if (delta > 0) {
+        const newItem = { 
+          name: item.name, 
+          price: parseFloat(item.price.replace('dt', '')),
+          quantity: 1 
+        };
+        
+        toast({
+          title: "Ajouté au panier",
+          description: `${item.name} ajouté`,
+        });
+        
+        return { 
+          ...prev, 
+          [itemKey]: newItem
+        };
+      }
+      return prev;
+    });
+  };
+
+  const handleCommander = () => {
+    // Validate 1/4m pizzas selection
+    if (quarterMeterPizzas.length > 0 && quarterMeterPizzas.length !== 4) {
+      toast({
+        title: "Sélection 1/4m incomplète",
+        description: `Vous devez sélectionner exactement 4 types de pizzas différents pour le 1/4m. Actuellement: ${quarterMeterPizzas.length}/4`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If we have exactly 4 quarter meter pizzas, add them to order
+    if (quarterMeterPizzas.length === 4) {
+      const quarterMeterKey = `Pizza 1/4m (${quarterMeterPizzas.join(", ")})`;
+      const price = 12; // Base price for 1/4m from the menu
+      
+      setOrderItems(prev => ({
+        ...prev,
+        [quarterMeterKey]: {
+          name: `Pizza 1/4m`,
+          size: "1/4m",
+          price: price,
+          quantity: 1
+        }
+      }));
+      
+      // Clear the quarter meter selection
+      setQuarterMeterPizzas([]);
+    }
+    
+    setShowOrderDialog(true);
+  };
+
+  const totalItems = Object.values(orderItems).reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const pizzaSizesData = {
+    "Margherita": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4m": 12, "1/2 mètre": 13, "1 mètre": 17 },
+    "Tuna": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
+    "4 Seasons": { "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60 },
+    "Vegetarien": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+    "Queen": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28 },
+    "Marguerita": { "Petite": 11, "Moyenne": 15, "Grande": 23, "1/4m": 13, "1/2 mètre": 13, "1 mètre": 23 },
+    "Orientale": { "Petite": 12, "Moyenne": 17.5, "Grande": 23, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 24 },
+    "Pepperoni": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+    "Chicken Supreme": { "Petite": 15, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "4 Cheese": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+    "Regina": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28 },
+    "Chicken Grilli": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 14, "1/2 mètre": 28, "1 mètre": 56 },
+    "Mexicain": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 15, "1/2 mètre": 29, "1 mètre": 58 },
+    "Kentucky": { "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60 },
+    "Norwegian": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70 },
+    "Sea Food": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70 },
+    "Newton": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
+    "Einstein": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
+    "Barlow": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
+    "Millikan": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32 },
+    "Ampere": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32 },
+    "Gauss": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32 },
+    "John Locke": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32 },
+    "Pesto": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32 },
+    "Chicken Spicy": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32 },
+    "Carnot": { "Petite": 15.5, "Moyenne": 22, "Grande": 32, "1/4m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32 },
+    "Mariotte": { "Petite": 14.5, "Moyenne": 21, "Grande": 32, "1/4m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32 },
+    "Kepler": { "Petite": 14, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32 },
+    "Van der waals": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32 },
+    "Tesla": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32 },
+    "The Wise": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32 },
+  };
 
   const menuCategories = [
     {
@@ -39,19 +198,21 @@ const MenuSection = () => {
           items: [
             { name: "César", price: "17dt" },
             { name: "Italienne", price: "19dt" },
-            { name: "The Wise", price: "24dt" },
-            { name: "Fruits de Mer", price: "27dt" }
+            { name: "Fruits de Mer", price: "27dt" },
+            { name: "The Wise", price: "24dt" }
           ]
         },
         {
           subtitle: "Entrées Chaudes",
           items: [
             { name: "Omelette Thon-Fromage", price: "13dt" },
-            { name: "Omelette Jambon-Fromage", price: "17dt" },
-            { name: "Calamars Dorés", price: "21dt" },
+            { name: "Omelette Jambon-Fromage", price: "18dt" },
             { name: "Moule Mariné", price: "24dt" },
-            { name: "Crevettes Panées", price: "25dt" },
-            { name: "Crevettes Sautées", price: "27dt" }
+            { name: "Calamars Dorés", price: "21dt" },
+            { name: "à l'Ail", price: "25dt" },
+            { name: "à la Crème", price: "27dt" },
+            { name: "Crevettes Sautées", price: "27dt" },
+            { name: "Crevettes Panées", price: "25dt" }
           ]
         }
       ],
@@ -65,22 +226,22 @@ const MenuSection = () => {
           items: [
             { name: "Escalope Grillé", price: "20dt" },
             { name: "Escalope Panée", price: "21dt" },
-            { name: "Chich Taouk", price: "22dt" },
             { name: "Cordon Bleu", price: "23dt" },
             { name: "French Chicken", price: "26dt" },
-            { name: "Suprême de Poulet à l'Italienne", price: "26dt" },
+            { name: "Suprême de Poulet à l'Italien", price: "26dt" },
+            { name: "Chich Taouk", price: "22dt" },
             { name: "Escalope Sauce Champignons", price: "27dt" }
           ]
         },
         {
           subtitle: "Les Viandes",
           items: [
-            { name: "Kabeb Viande", price: "28dt" },
-            { name: "Steak de Bœuf Farci", price: "28dt" },
-            { name: "Grillade Mixte", price: "29dt" },
+            { name: "Grillade Mixte", price: "33dt" },
             { name: "Émincé de Bœuf à la Crème", price: "33dt" },
-            { name: "Côte à l'Os", price: "35dt" },
-            { name: "Filet de Bœuf", price: "42dt" }
+            { name: "Filet de Bœuf", price: "42dt" },
+            { name: "Kabeb Viande", price: "28dt" },
+            { name: "Steak Haché Fondant", price: "31dt" },
+            { name: "Côte à l'Os", price: "35dt" }
           ]
         },
         {
@@ -97,238 +258,287 @@ const MenuSection = () => {
     {
       title: "🦞 Fruits de Mer",
       items: [
-        { name: "Poisson Grillé", description: "(Loup/Bourride)", price: "25dt" },
-        { name: "Fruits de Mer", price: "36dt" },
-        { name: "Oja Fruits de Mer", price: "38dt" },
-        { name: "Délire The Wise", price: "48dt" },
-        { name: "Gratin Fruits de Mer", price: "59dt" }
-      ],
-      // TODO: Replace with your seafood image
-      // image: seafood
+        { name: "Poisson Grillé", description: "(Loup ou Bourride)", price: "25dt" },
+        { name: "Loup", description: "Garniture du chef", price: "29dt" },
+        { name: "à l'Ail", description: "Garniture du chef", price: "35dt" },
+        { name: "Fruits de Mer", description: "Garniture du chef", price: "37dt" },
+        { name: "Oja Fruits de Mer", price: "43dt" },
+        { name: "Délice The Wise", description: "Fruits de Mer / Filet de Poisson / Garniture du chef", price: "48dt" },
+        { name: "Gratin Fruits de Mer", description: "Garniture du chef", price: "59dt" }
+      ]
     },
     {
       title: "🍝 Pasta",
+      subtitle: "Spaghetti, Pennes, Tagliatelles",
       items: [
+        { name: "Fruits de Mer (Sauce Rouge)", price: "36dt" },
+        { name: "Lasposa (Fruits de Mer, Sauce Blanche)", price: "39dt" },
+        { name: "Pink (Viande Fumé, Sauce Pink, Oignon, Gruyère)", price: "31dt" },
+        { name: "Carbonara (Jambon, Champignons, Jaune d'œuf, Sauce Blanche)", price: "22dt" },
+        { name: "Bolognaise (Viande hachée, Sauce tomate)", price: "25dt" },
+        { name: "Putanesca (Thon, Olive, Câpre, Piments de Cayenne)", price: "23dt" },
+        { name: "Spinaci (Chevrettes, Champignons, Epinard, Tomates Cerises)", price: "33dt" },
+        { name: "Alfredo (Poulet, Champignons, Sauce Blanche)", price: "26dt" },
+        { name: "The Wise (Crevette, Saumon, Sauce Rosée)", price: "39dt" },
         { name: "Lasagne Bolognaise", price: "21dt" },
-        { name: "Putanesca", price: "23dt" },
-        { name: "Bolognaise", price: "29dt" },
-        { name: "Alfredo", price: "29dt" },
-        { name: "Carbonara", price: "32dt" },
-        { name: "4 Fromages", price: "33dt" },
-        { name: "Spinaci", price: "33dt" },
-        { name: "The Wise", price: "33dt" },
-        { name: "Fruits de Mer", price: "36dt" },
-        { name: "Lasposa", price: "39dt" },
-        { name: "Pink", price: "39dt" }
-      ],
-      // TODO: Replace with your pasta image
-      // image: pastaDish
+        { name: "4 Fromages", price: "25dt" }
+      ]
     },
     {
       title: "🍕 Pizzas",
-      items: [
-        { name: "Margherita", sizes: "Petit 9dt - Moyen 12dt - Large 15dt - 1/4m 12dt - 1/2m 24dt - 1m 48dt" },
-        { name: "Tuna", sizes: "Petit 10dt - Moyen 13dt - Large 16dt - 1/4m 13dt - 1/2m 26dt - 1m 52dt" },
-        { name: "Vegetarien", sizes: "Petit 11dt - Moyen 14dt - Large 17dt - 1/4m 14dt - 1/2m 28dt - 1m 56dt" },
-        { name: "Pepperoni", sizes: "Petit 12dt - Moyen 15dt - Large 18dt - 1/4m 15dt - 1/2m 30dt - 1m 60dt" },
-        { name: "Chicken Grilli", sizes: "Petit 13dt - Moyen 16dt - Large 19dt - 1/4m 14dt - 1/2m 28dt - 1m 56dt" },
-        { name: "4 Seasons", sizes: "Petit 14dt - Moyen 17dt - Large 20dt - 1/4m 15dt - 1/2m 30dt - 1m 60dt" },
-        { name: "Queen", sizes: "Petit 14dt - Moyen 17dt - Large 20dt - 1/4m 15dt - 1/2m 30dt - 1m 60dt" },
-        { name: "Regina", sizes: "Petit 14dt - Moyen 17dt - Large 20dt - 1/4m 15dt - 1/2m 30dt - 1m 60dt" },
-        { name: "Norwegian", sizes: "Petit 14dt - Moyen 17dt - Large 20dt - 1/4m 15dt - 1/2m 30dt - 1m 60dt" },
-        { name: "Orientale", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "4 Fromages", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Gauss", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "John Locke", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Pesto", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Chicken Spicy", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Carnot", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Mariotte", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Kepler", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Van der Waals", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Tesla", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Mexican", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Kentucky", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Sea Food", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 16dt - 1/2m 32dt - 1m 64dt" },
-        { name: "Newton", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 17dt - 1/2m 34dt - 1m 68dt" },
-        { name: "Einstein", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 17dt - 1/2m 34dt - 1m 68dt" },
-        { name: "Barlow", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 17dt - 1/2m 34dt - 1m 68dt" },
-        { name: "Millikan", sizes: "Petit 15dt - Moyen 18dt - Large 21dt - 1/4m 17dt - 1/2m 34dt - 1m 68dt" },
-        { name: "Ampere", sizes: "Petit 19dt - Moyen 22dt - Large 25dt - 1/4m 20dt - 1/2m 40dt - 1m 80dt" },
-        { name: "The Wise", sizes: "Petit 19dt - Moyen 22dt - Large 25dt - 1/4m 20dt - 1/2m 40dt - 1m 80dt" }
-      ],
+      isPizza: true,
+      pizzas: Object.keys(pizzaSizesData),
       images: [pizza1Img, pizza2Img]
     },
     {
       title: "🥪 Sandwiches",
       sections: [
         {
-          subtitle: "Standard",
+          subtitle: "Ciabata",
           items: [
             { name: "Jambon Dinde", price: "8.5dt" },
             { name: "Esc. Poulet Grillé", price: "9.5dt" },
             { name: "Esc. Poulet Panée", price: "10dt" },
             { name: "Chich Taouk", price: "10dt" },
             { name: "Cordon Bleu", price: "11dt" },
-            { name: "Kabeb", price: "12dt" },
-            { name: "Tacos Gratin", price: "+2.5dt" }
+            { name: "Kabeb", price: "12dt" }
           ]
         },
         {
           subtitle: "Special The Wise",
           items: [
             { name: "Mariotte", price: "12dt" },
-            { name: "Savored", price: "13dt" },
             { name: "Wilson", price: "13dt" },
-            { name: "TacoWISE", price: "14dt" }
+            { name: "Savored", price: "13dt" },
+            { name: "TacoWise", price: "14dt" }
           ]
         },
         {
-          subtitle: "Baguette Farcie / Makloub",
+          subtitle: "Baguette Farcie / Makloub The Wise",
           items: [
             { name: "Thon", price: "12dt" },
             { name: "Pepperoni", price: "12dt" },
-            { name: "Chicken Wise", price: "12dt" },
-            { name: "Kentucky", price: "12dt" },
-            { name: "Cheesy Wise", price: "12dt" },
-            { name: "Cordon Bleu", price: "13dt" },
+            { name: "Oriental", price: "12dt" },
             { name: "Corleone", price: "13dt" },
+            { name: "Kentucky", price: "12dt" },
+            { name: "Cheesy Wise", price: "14dt" },
+            { name: "Chicken Wise", price: "13dt" },
             { name: "The Wise", price: "14dt" }
           ]
         },
         {
           subtitle: "Supplements Sandwich/Bowls",
           items: [
-            { name: "Champignons", price: "3dt" },
-            { name: "Gruyère", price: "3dt" },
-            { name: "Cheddar", price: "3dt" },
-            { name: "Mozzarella", price: "3dt" },
-            { name: "Jambon", price: "3.5dt" },
-            { name: "Portion Frites", price: "4.5dt" },
+            { name: "Portion Frites", price: "4dt" },
+            { name: "Thon", price: "4.5dt" },
+            { name: "Nuggets", price: "4.5dt" },
             { name: "Esc. Poulet Grillé", price: "4.5dt" },
             { name: "Esc. Poulet Panée", price: "4.5dt" },
-            { name: "Nuggets", price: "4.5dt" },
-            { name: "Cordon Bleu", price: "5.5dt" },
+            { name: "Jambon", price: "2.5dt" },
+            { name: "Œuf", price: "1dt" },
+            { name: "Champignons", price: "2.5dt" },
+            { name: "Gruyère", price: "3.5dt" },
+            { name: "Cheddar", price: "3dt" },
+            { name: "Mozzarella", price: "3dt" },
+            { name: "Cordon Bleu", price: "5dt" },
+            { name: "Chich Taouk", price: "6dt" },
             { name: "Kabeb", price: "6dt" }
           ]
         }
-      ],
-      // TODO: Replace with your sandwiches image
-      // image: sandwiches
+      ]
     },
     {
       title: "🍔 Burgers",
       items: [
         { name: "Chicken Burger", price: "13dt" },
-        { name: "Cheese Burger", price: "15dt" },
         { name: "Big Chicken Burger", price: "18dt" },
-        { name: "Americain Burger", price: "19dt" },
+        { name: "Cheese Burger", price: "15dt" },
         { name: "Big Cheese Burger", price: "21dt" },
-        { name: "The Wise Burger", price: "24dt" }
+        { name: "Americain Burger", price: "19dt" },
+        { name: "The Wise Burger", price: "22dt" }
       ],
       image: burgerImg
     },
     {
       title: "🍗 Chicken Box",
       items: [
-        { name: "Hot Chicken Wings", description: "(8 pcs)", price: "16dt" },
-        { name: "Chicken Fingers", description: "(12 pcs)", price: "17dt" },
-        { name: "Hot Chicken Legs", description: "(6 pcs)", price: "22dt" },
-        { name: "Fried Chicken Legs", description: "(6 pcs)", price: "24dt" },
-        { name: "Fried Chicken Cheese", description: "(6 pcs)", price: "25dt" },
-        { name: "Chicken Mix", description: "(3 fingers + 3 wings + 3 legs)", price: "28dt" }
-      ],
-      // TODO: Replace with your chicken box image
-      // image: chickenBox
+        { name: "Chicken Fingers", description: "Bâtonnets de poulet Panés (9 pièces)", price: "17dt" },
+        { name: "Hot Chicken Legs", description: "Cuisses de Poulet Épicées (6 pièces)", price: "22dt" },
+        { name: "Fried Chicken Cheese", description: "Poulet Pané Farci au Fromage (6 pièces)", price: "25dt" },
+        { name: "Fried Chicken Legs", description: "Cuisses de Poulet Panées (6 pièces)", price: "22dt" },
+        { name: "Hot Chicken Wings", description: "Ailes de Poulet Épicées (8 pièces)", price: "16dt" },
+        { name: "Chicken Mix", description: "3 fingers + 2 wings + 3 legs (8 pièces)", price: "28dt" }
+      ]
     },
     {
       title: "🥗 Bowls",
+      description: "Nos Bowls sont Garnis d'une Sauce Maison, Frites, Mozzarella + Viande Au Choix",
       items: [
         { name: "Esc. Grillé", price: "14.5dt" },
         { name: "Esc. Panée", price: "15dt" },
-        { name: "Steak de Bœuf Haché", price: "16.5dt" },
-        { name: "Pepperoni", price: "16.5dt" },
+        { name: "Steak de Bœuf Haché", price: "16dt" },
+        { name: "Pepperoni", price: "14.5dt" },
         { name: "Crevettes Sautées ou Panées", price: "19dt" }
-      ],
-      // TODO: Replace with your bowls image
-      // image: bowls
+      ]
     },
     {
       title: "⭐ Special The Wise",
       items: [
-        { name: "Paella (1 pers.)", price: "39dt" },
-        { name: "Paella (2 pers.)", price: "65dt" },
         { name: "Symphonie Fruits de Mer", price: "98dt" },
-        { name: "Symphonie Mixte (Terre & Mer)", price: "160dt" }
+        { name: "Paella (1 pers.)", price: "39dt" },
+        { name: "Paella (2 pers.)", price: "85dt" },
+        { name: "Symphonie Mixte (Terre, Mer)", price: "160dt" }
       ]
     },
     {
       title: "🍫 Snacks",
       sections: [
         {
-          subtitle: "Crêpes Sucrées",
+          subtitle: "Les Crêpes Sucrées",
           items: [
-            { name: "Simple Nutella", price: "9.5dt" },
-            { name: "Nutella Banane", price: "11dt" },
-            { name: "Nutella Speculoos", price: "11.5dt" },
-            { name: "Euchapina", price: "12dt" },
-            { name: "Big Dolce", price: "16dt" }
+            { name: "Simple Nutella, Garniture", price: "9dt" },
+            { name: "Thon Fromage, Thon, Fromage", price: "8.5dt" },
+            { name: "Nutella Banane, Nutella, Banane, Garniture", price: "12dt" },
+            { name: "Jambon Fromage, Jambon, Fromage", price: "9dt" },
+            { name: "Dolce, Nutella, Speculoos", price: "11dt" },
+            { name: "Puttanesca, Sauce Puttanesca, Sauce Napolitaine, Câpre, Piment de Cayenne, Thon, Olive", price: "11.5dt" },
+            { name: "Ecubana, Banane, Miel", price: "14dt" },
+            { name: "Complet, Œuf, Harissa, Jambon, Thon, Mozzarella", price: "11dt" },
+            { name: "The Wise, Nutella, Chocolat Blanc, m&m's, Twix, Speculoos, Crème Cheese", price: "16dt" },
+            { name: "The Wise, Harissa, mozzarella, ricotta jambon fumée, emincé de poulet champignon sauté", price: "18dt" }
           ]
         },
         {
-          subtitle: "Crêpes Salées",
+          subtitle: "Les Crêpes Salées",
           items: [
             { name: "Thon Fromage", price: "10dt" },
             { name: "Jambon Fromage", price: "10.5dt" },
-            { name: "Puttanesca", price: "12dt" },
-            { name: "The Wise", price: "13dt" }
+            { name: "Puttanesca", price: "11.5dt" },
+            { name: "The Wise", price: "18dt" }
           ]
         },
         {
           subtitle: "Gaufres",
           items: [
             { name: "Nutella", price: "9.5dt" },
-            { name: "Tropicale", price: "11dt" },
-            { name: "Big Dolce", price: "16dt" },
-            { name: "The Wise", price: "16dt" }
+            { name: "Tropicale, Nutella, Kiwi, Banane, Chantilly", price: "11dt" },
+            { name: "Big Dolce, Nutella, Oreo, Speculoos, Fruit sec, garnitures", price: "13dt" },
+            { name: "The Wise, Nutella, Oreo, Speculoos, Fruit sec, garnitures", price: "16dt" }
           ]
         }
-      ],
-      // TODO: Replace with your snacks image
-      // image: snacks
+      ]
     },
     {
       title: "👶 Menu Enfants",
       items: [
-        { name: "Chapletta", description: "(Mini Pizza + Frites + Soda)", price: "13.8dt" },
+        { name: "Chapletta", description: "(Mini Pizza ou Frites + Soda)", price: "13.8dt" },
         { name: "Calico", description: "(Nuggets + Frites + Soda)", price: "13.8dt" }
-      ],
-      // TODO: Replace with your kids menu image
-      // image: kidsMenu
+      ]
     },
     {
       title: "🥤 Boissons",
       sections: [
         {
-          subtitle: "Boissons Chaudes",
+          subtitle: "Hot Drinks",
           items: [
-            { name: "Thé", price: "2dt" },
-            { name: "Café Express", price: "2dt" },
-            { name: "Café Direct", price: "2.5dt" },
-            { name: "Café Crème", price: "3dt" },
-            { name: "Cappuccino", price: "4dt" }
+            { name: "Express", price: "2.5dt" },
+            { name: "Direct", price: "3dt" },
+            { name: "Cappuccin", price: "2.8dt" },
+            { name: "Crème", price: "5.5dt" },
+            { name: "Cappuccino", price: "4.5dt" },
+            { name: "Crème Nutella", price: "5.4dt" },
+            { name: "Chocolat au lait", price: "3dt" },
+            { name: "Thé à la menthe", price: "1.8dt" },
+            { name: "Thé aux amandes", price: "4.8dt" },
+            { name: "Thé pignon", price: "7.8dt" },
+            { name: "Verveine", price: "2.8dt" }
           ]
         },
         {
-          subtitle: "Boissons Froides",
+          subtitle: "Cocktails",
           items: [
-            { name: "Eau Minérale", price: "1.5dt" },
-            { name: "Coca Cola", price: "2.5dt" },
-            { name: "Fanta", price: "2.5dt" },
-            { name: "Sprite", price: "2.5dt" },
-            { name: "Jus Frais", price: "5dt" },
-            { name: "Smoothie", price: "7dt" },
-            { name: "Mojito", price: "8dt" }
+            { name: "Amoureux, Fraise, banane", price: "9.2dt" },
+            { name: "Scandinave, kiwi, Banane", price: "9.8dt" },
+            { name: "Black & white, Banane, Nutella", price: "10.5dt" },
+            { name: "Palmier, Dattes, Banane", price: "10.5dt" },
+            { name: "The wise, Banane, Datte, Miel, Fruits Secs+Garnitures", price: "12.8dt" }
+          ]
+        },
+        {
+          subtitle: "Mojito",
+          items: [
+            { name: "Virgin Mojito", price: "7.8dt" },
+            { name: "Healthy Mojito", price: "7.8dt" },
+            { name: "Blue Mojito", price: "8.8dt" },
+            { name: "Red Mojito", price: "8.8dt" },
+            { name: "Fruit de Passion", price: "8.8dt" },
+            { name: "Energetic Mojito", price: "12.8dt" }
+          ]
+        },
+        {
+          subtitle: "Smoothies",
+          items: [
+            { name: "Red Frutti", price: "9.8dt" },
+            { name: "Pina Colada", price: "10.5dt" },
+            { name: "Blue Berry", price: "9.8dt" },
+            { name: "Passion kiwi", price: "11.5dt" },
+            { name: "The Wise", price: "13.5dt" }
+          ]
+        },
+        {
+          subtitle: "Les Jus",
+          items: [
+            { name: "Citron", price: "3.8dt" },
+            { name: "Citron aux amandes", price: "7.2dt" },
+            { name: "Banane", price: "7.8dt" },
+            { name: "Orange", price: "4.2dt" },
+            { name: "Fraise", price: "6.5dt" },
+            { name: "Jus Fruits", price: "9.8dt" }
+          ]
+        },
+        {
+          subtitle: "Frappuccino",
+          items: [
+            { name: "Nutella", price: "9.8dt" },
+            { name: "Spéculoos", price: "9.8dt" },
+            { name: "Oreo", price: "9.8dt" },
+            { name: "Twix", price: "9.8dt" },
+            { name: "Snickers", price: "9.8dt" },
+            { name: "The wise, Banane, Nutella, Oreo, Garnitures", price: "13.8dt" }
+          ]
+        },
+        {
+          subtitle: "Jwajem",
+          items: [
+            { name: "Mini The Wise", price: "12dt" },
+            { name: "Spécial The Wise", price: "17dt" }
+          ]
+        },
+        {
+          subtitle: "Desserts",
+          items: [
+            { name: "Tiramisu", price: "6.8dt" },
+            { name: "Cheese Cake", price: "6.8dt" },
+            { name: "American Chocolate", price: "9.8dt" }
+          ]
+        },
+        {
+          subtitle: "Suppléments",
+          items: [
+            { name: "Dose arôme", price: "2.8dt" },
+            { name: "Chantilly", price: "1.8dt" },
+            { name: "Nutella", price: "3.8dt" },
+            { name: "Amande", price: "3.2dt" }
+          ]
+        },
+        {
+          subtitle: "Boissons",
+          items: [
+            { name: "Eau Minérale 0.5L", price: "1.3dt" },
+            { name: "Eau Minérale 1L", price: "2.5dt" },
+            { name: "Soda", price: "2.8dt" },
+            { name: "Orangina", price: "3.2dt" },
+            { name: "Energy Drink", price: "8.8dt" }
           ]
         }
       ],
@@ -337,11 +547,11 @@ const MenuSection = () => {
   ];
 
   const getOrderList = () => {
-    const items: Array<{ name: string; quantity: number; price: string }> = [];
-    Object.entries(orderItems).forEach(([name, quantity]) => {
-      items.push({ name, quantity, price: "" });
-    });
-    return items;
+    return Object.entries(orderItems).map(([key, item]) => ({
+      name: key,
+      quantity: item.quantity,
+      price: `${item.price}dt`
+    }));
   };
 
   return (
@@ -360,15 +570,21 @@ const MenuSection = () => {
         </div>
 
         {/* Floating Order Button */}
-        {totalItems > 0 && (
+        {(totalItems > 0 || quarterMeterPizzas.length > 0) && (
           <div className="fixed bottom-8 right-8 z-50 animate-scale-in">
             <Button
-              onClick={() => setShowOrderDialog(true)}
+              onClick={handleCommander}
               size="lg"
               className="rounded-full shadow-2xl bg-restaurant-red hover:bg-restaurant-red-dark text-white glow-on-hover h-16 px-8"
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
-              Commander ({totalItems})
+              Commander ({totalItems + (quarterMeterPizzas.length > 0 ? 1 : 0)})
+              {totalPrice > 0 && ` - ${totalPrice.toFixed(2)}dt`}
+              {quarterMeterPizzas.length > 0 && (
+                <span className="ml-2 text-xs">
+                  (1/4m: {quarterMeterPizzas.length}/4)
+                </span>
+              )}
             </Button>
           </div>
         )}
@@ -380,138 +596,177 @@ const MenuSection = () => {
                 <CardTitle className="text-2xl font-bold text-center">
                   {category.title}
                 </CardTitle>
+                {category.subtitle && (
+                  <p className="text-center text-white/90 text-sm mt-2">{category.subtitle}</p>
+                )}
               </CardHeader>
               <CardContent className="p-6">
-                <div className="grid lg:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    {category.items && category.items.map((item: any, itemIndex) => (
-                      <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
-                            {item.name}
+                {category.isPizza ? (
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      {category.pizzas?.map((pizzaName: string, pizzaIndex: number) => (
+                        <div key={pizzaIndex} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
+                          <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral mb-3">
+                            {pizzaName}
                           </h4>
-                          {item.description && (
-                            <p className="text-muted-foreground text-sm mt-1">
-                              {item.description}
-                            </p>
-                          )}
-                          {item.sizes && (
-                            <p className="text-restaurant-red text-sm mt-1 font-medium">
-                              {item.sizes}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          {item.price && (
-                            <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
-                              {item.price}
-                            </Badge>
-                          )}
-                          <div className="flex items-center gap-1 bg-muted rounded-full p-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
-                              onClick={() => handleQuantityChange(item.name, -1)}
+                          <div className="flex gap-2 items-center flex-wrap">
+                            <Select
+                              value={pizzaSizes[pizzaName] || ""}
+                              onValueChange={(value) => setPizzaSizes(prev => ({ ...prev, [pizzaName]: value }))}
                             >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-8 text-center text-sm font-semibold">
-                              {orderItems[item.name] || 0}
-                            </span>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Sélectionnez la taille" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(pizzaSizesData[pizzaName] || {}).map(([size, price]: [string, number]) => (
+                                  <SelectItem key={size} value={size}>
+                                    {size} - {price}dt
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
-                              onClick={() => handleQuantityChange(item.name, 1)}
+                              onClick={() => handlePizzaOrder(pizzaName, pizzaSizesData[pizzaName])}
+                              size="sm"
+                              className="bg-restaurant-red hover:bg-restaurant-red-dark text-white"
                             >
-                              <Plus className="h-3 w-3" />
+                              <Plus className="h-4 w-4 mr-1" />
+                              Ajouter
                             </Button>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                    {category.sections && category.sections.map((section: any, sectionIndex) => (
-                      <div key={sectionIndex} className="space-y-3">
-                        <h3 className="font-bold text-xl text-restaurant-red mt-4 flex items-center gap-2">
-                          <span className="h-1 w-8 bg-restaurant-red rounded"></span>
-                          {section.subtitle}
-                        </h3>
-                        {section.items.map((item: any, itemIndex: number) => (
-                          <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
-                                {item.name}
-                              </h4>
-                              {item.description && (
-                                <p className="text-muted-foreground text-sm mt-1">
-                                  {item.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 ml-4">
-                              {item.price && (
-                                <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
-                                  {item.price}
-                                </Badge>
-                              )}
-                              <div className="flex items-center gap-1 bg-muted rounded-full p-1">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
-                                  onClick={() => handleQuantityChange(item.name, -1)}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="w-8 text-center text-sm font-semibold">
-                                  {orderItems[item.name] || 0}
-                                </span>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
-                                  onClick={() => handleQuantityChange(item.name, 1)}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+                      ))}
+                    </div>
+                    {category.images && (
+                      <div className="hidden lg:flex flex-col gap-4 items-center justify-center">
+                        {category.images.map((img: string, imgIndex: number) => (
+                          <img 
+                            key={imgIndex}
+                            src={img} 
+                            alt={`${category.title} ${imgIndex + 1}`}
+                            className="max-w-lg w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                            style={{
+                              filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
+                            }}
+                          />
                         ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                  {/* Single image */}
-                  {category.image && (
-                    <div className="hidden lg:flex items-center justify-center">
-                      <img 
-                        src={category.image} 
-                        alt={category.title}
-                        className="max-w-md w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
-                        style={{
-                          filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
-                        }}
-                      />
+                ) : (
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      {category.description && (
+                        <p className="text-sm text-muted-foreground italic mb-4">{category.description}</p>
+                      )}
+                      {category.items && category.items.map((item: any, itemIndex) => (
+                        <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
+                              {item.name}
+                            </h4>
+                            {item.description && (
+                              <p className="text-muted-foreground text-sm mt-1">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            {item.price && (
+                              <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
+                                {item.price}
+                              </Badge>
+                            )}
+                            <div className="flex items-center gap-1 bg-muted rounded-full p-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                onClick={() => handleQuantityChange(item.name, item, -1, true)}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-8 text-center text-sm font-semibold">
+                                {orderItems[item.name]?.quantity || 0}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                onClick={() => handleQuantityChange(item.name, item, 1, true)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {category.sections && category.sections.map((section: any, sectionIndex) => (
+                        <div key={sectionIndex} className="space-y-3">
+                          <h3 className="font-bold text-xl text-restaurant-red mt-4 flex items-center gap-2">
+                            <span className="h-1 w-8 bg-restaurant-red rounded"></span>
+                            {section.subtitle}
+                          </h3>
+                          {section.items.map((item: any, itemIndex: number) => (
+                            <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
+                                  {item.name}
+                                </h4>
+                                {item.description && (
+                                  <p className="text-muted-foreground text-sm mt-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 ml-4">
+                                {item.price && (
+                                  <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
+                                    {item.price}
+                                  </Badge>
+                                )}
+                                <div className="flex items-center gap-1 bg-muted rounded-full p-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                    onClick={() => handleQuantityChange(item.name, item, -1, true)}
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <span className="w-8 text-center text-sm font-semibold">
+                                    {orderItems[item.name]?.quantity || 0}
+                                  </span>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                    onClick={() => handleQuantityChange(item.name, item, 1, true)}
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  {/* Multiple images (like pizzas) */}
-                  {category.images && (
-                    <div className="hidden lg:flex flex-col gap-4 items-center justify-center">
-                      {category.images.map((img: string, imgIndex: number) => (
+                    {/* Single image */}
+                    {category.image && (
+                      <div className="hidden lg:flex items-center justify-center">
                         <img 
-                          key={imgIndex}
-                          src={img} 
-                          alt={`${category.title} ${imgIndex + 1}`}
-                          className="max-w-sm w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                          src={category.image} 
+                          alt={category.title}
+                          className="max-w-md w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
                           style={{
                             filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
                           }}
                         />
-                      ))}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -523,6 +778,7 @@ const MenuSection = () => {
           open={showOrderDialog}
           onOpenChange={setShowOrderDialog}
           orderItems={getOrderList()}
+          totalPrice={totalPrice}
         />
       )}
     </section>

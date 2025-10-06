@@ -32,6 +32,9 @@ const MenuSection = () => {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [pizzaSizes, setPizzaSizes] = useState<Record<string, string>>({});
   const [quarterMeterPizzas, setQuarterMeterPizzas] = useState<string[]>([]);
+  const [halfMeterPizzas, setHalfMeterPizzas] = useState<string[]>([]);
+  const [mediumDeuxChoixPizzas, setMediumDeuxChoixPizzas] = useState<string[]>([]);
+  const [largeDeuxChoixPizzas, setLargeDeuxChoixPizzas] = useState<string[]>([]);
   const { toast } = useToast();
 
   const handlePizzaOrder = (pizzaName: string, sizes: any) => {
@@ -48,9 +51,8 @@ const MenuSection = () => {
 
     const price = sizes[selectedSize];
     
-    // Handle 1/4m orders differently
+    // Handle combo orders
     if (selectedSize === "1/4m") {
-      // Check if this pizza is already in the 1/4m selection
       if (quarterMeterPizzas.includes(pizzaName)) {
         toast({
           title: "Déjà ajouté",
@@ -59,13 +61,61 @@ const MenuSection = () => {
         });
         return;
       }
-      
-      // Add to quarter meter selection
       setQuarterMeterPizzas(prev => [...prev, pizzaName]);
-      
       toast({
         title: "Pizza 1/4m ajoutée",
         description: `${pizzaName} ajouté (${quarterMeterPizzas.length + 1}/4 pizzas sélectionnées)`,
+      });
+      return;
+    }
+    
+    if (selectedSize === "1/2 mètre") {
+      if (halfMeterPizzas.includes(pizzaName)) {
+        toast({
+          title: "Déjà ajouté",
+          description: `${pizzaName} est déjà dans votre sélection 1/2 mètre`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setHalfMeterPizzas(prev => [...prev, pizzaName]);
+      toast({
+        title: "Pizza 1/2 mètre ajoutée",
+        description: `${pizzaName} ajouté (${halfMeterPizzas.length + 1}/2 pizzas sélectionnées)`,
+      });
+      return;
+    }
+    
+    if (selectedSize === "Moyenne deux choix") {
+      if (mediumDeuxChoixPizzas.includes(pizzaName)) {
+        toast({
+          title: "Déjà ajouté",
+          description: `${pizzaName} est déjà dans votre sélection`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setMediumDeuxChoixPizzas(prev => [...prev, pizzaName]);
+      toast({
+        title: "Moitié ajoutée",
+        description: `1/2 ${pizzaName} ajouté (${mediumDeuxChoixPizzas.length + 1}/2 pour 1 pizza Moyenne)`,
+      });
+      return;
+    }
+    
+    if (selectedSize === "Grande deux choix") {
+      if (largeDeuxChoixPizzas.includes(pizzaName)) {
+        toast({
+          title: "Déjà ajouté",
+          description: `${pizzaName} est déjà dans votre sélection`,
+          variant: "destructive",
+        });
+        return;
+      }
+      setLargeDeuxChoixPizzas(prev => [...prev, pizzaName]);
+      toast({
+        title: "Moitié ajoutée",
+        description: `1/2 ${pizzaName} ajouté (${largeDeuxChoixPizzas.length + 1}/2 pour 1 pizza Grande)`,
       });
       return;
     }
@@ -120,7 +170,7 @@ const MenuSection = () => {
   };
 
   const handleCommander = () => {
-    // Validate 1/4m pizzas selection
+    // Validate all combo selections
     if (quarterMeterPizzas.length > 0 && quarterMeterPizzas.length !== 4) {
       toast({
         title: "Sélection 1/4m incomplète",
@@ -130,23 +180,96 @@ const MenuSection = () => {
       return;
     }
     
-    // If we have exactly 4 quarter meter pizzas, add them to order
+    if (halfMeterPizzas.length > 0 && halfMeterPizzas.length !== 2) {
+      toast({
+        title: "Sélection 1/2 mètre incomplète",
+        description: `Vous devez sélectionner exactement 2 types de pizzas différents pour le 1/2 mètre. Actuellement: ${halfMeterPizzas.length}/2`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (mediumDeuxChoixPizzas.length > 0 && mediumDeuxChoixPizzas.length !== 2) {
+      toast({
+        title: "Sélection Moyenne incomplète",
+        description: `Sélectionnez 2 types pour UNE pizza Moyenne (moitié-moitié). Actuellement: ${mediumDeuxChoixPizzas.length}/2`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (largeDeuxChoixPizzas.length > 0 && largeDeuxChoixPizzas.length !== 2) {
+      toast({
+        title: "Sélection Grande incomplète",
+        description: `Sélectionnez 2 types pour UNE pizza Grande (moitié-moitié). Actuellement: ${largeDeuxChoixPizzas.length}/2`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Add completed combos to order
     if (quarterMeterPizzas.length === 4) {
-      const quarterMeterKey = `Pizza 1/4m (${quarterMeterPizzas.join(", ")})`;
-      const price = 12; // Base price for 1/4m from the menu
-      
+      const firstPizzaPrice = pizzaSizesData[quarterMeterPizzas[0]]["1/4m"] || 12;
+      const totalPrice = firstPizzaPrice * 4;
       setOrderItems(prev => ({
         ...prev,
-        [quarterMeterKey]: {
-          name: `Pizza 1/4m`,
-          size: "1/4m",
-          price: price,
+        [`Pizza 1 Mètre (${quarterMeterPizzas.join(", ")})`]: {
+          name: `Pizza 1 Mètre`,
+          size: "1 Mètre",
+          price: totalPrice,
           quantity: 1
         }
       }));
-      
-      // Clear the quarter meter selection
       setQuarterMeterPizzas([]);
+    }
+    
+    if (halfMeterPizzas.length === 2) {
+      const firstPizzaPrice = pizzaSizesData[halfMeterPizzas[0]]["1/2 mètre"] || 13;
+      const totalPrice = firstPizzaPrice * 2;
+      setOrderItems(prev => ({
+        ...prev,
+        [`Pizza 1/2 Mètre (${halfMeterPizzas.join(", ")})`]: {
+          name: `Pizza 1/2 Mètre`,
+          size: "1/2 Mètre",
+          price: totalPrice,
+          quantity: 1
+        }
+      }));
+      setHalfMeterPizzas([]);
+    }
+    
+    if (mediumDeuxChoixPizzas.length === 2) {
+      // ONE Moyenne pizza split in half (1/2 of each type)
+      const halfPrice1 = pizzaSizesData[mediumDeuxChoixPizzas[0]]["Moyenne"] / 2;
+      const halfPrice2 = pizzaSizesData[mediumDeuxChoixPizzas[1]]["Moyenne"] / 2;
+      const totalPrice = halfPrice1 + halfPrice2;
+      setOrderItems(prev => ({
+        ...prev,
+        [`1 Pizza Moyenne (1/2 ${mediumDeuxChoixPizzas[0]} + 1/2 ${mediumDeuxChoixPizzas[1]})`]: {
+          name: `1 Pizza Moyenne Deux Choix`,
+          size: "Moyenne",
+          price: totalPrice,
+          quantity: 1
+        }
+      }));
+      setMediumDeuxChoixPizzas([]);
+    }
+    
+    if (largeDeuxChoixPizzas.length === 2) {
+      // ONE Grande pizza split in half (1/2 of each type)
+      const halfPrice1 = pizzaSizesData[largeDeuxChoixPizzas[0]]["Grande"] / 2;
+      const halfPrice2 = pizzaSizesData[largeDeuxChoixPizzas[1]]["Grande"] / 2;
+      const totalPrice = halfPrice1 + halfPrice2;
+      setOrderItems(prev => ({
+        ...prev,
+        [`1 Pizza Grande (1/2 ${largeDeuxChoixPizzas[0]} + 1/2 ${largeDeuxChoixPizzas[1]})`]: {
+          name: `1 Pizza Grande Deux Choix`,
+          size: "Grande",
+          price: totalPrice,
+          quantity: 1
+        }
+      }));
+      setLargeDeuxChoixPizzas([]);
     }
     
     setShowOrderDialog(true);
@@ -156,40 +279,73 @@ const MenuSection = () => {
   const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const pizzaSizesData = {
-  "Margherita: Sauce Tomate, Mozzarella": { "Petite": 11, "Moyenne": 15, "1/2 Moyenne": 7.5, "Large": 19, "1/2 Large": 9.5, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
-  "Tuna: Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 26, "1/2 Large": 13, "1/4 m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
-  "4 Seasons: Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate": { "Petite": 14.5, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
-  "Vegetarien: Champignons, Poivrons, Oignons, Olives, Tomates Fraîches, Mozzarella, Sauce Tomate": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
-  "Queen: Jambon de Dinde, Champignons, Mozzarella, Sauce Tomate": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
-  "Orientale: Merguez, Poivrons, Oignons, Champignons, Tomates Fraîches, Sauce Tomate, Mozzarella": { "Petite": 12, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 23, "1/2 Large": 11.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 24 },
-  "Pepperoni: Pepperoni, Oignons, Sauce Tomate, Mozzarella": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
-  "Shrimp: Crevettes, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 14, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 30, "1/2 Large": 15, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
-  "4 Cheese: Sauce Tomate, Mozzarella, Fromage, Sauce Blanche": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
-  "Regina: Jambon de Dinde, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
-  "Chicken Grill: Émincés de Poulet Grillés, Poivrons, Champignons, Oignons, Sauce Tomate, Mozzarella": { "Petite": 13, "Moyenne": 20, "1/2 Moyenne": 10, "Large": 29, "1/2 Large": 14.5, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
-  "Mexicain: Poivrons, Piments Jalapeños, Champignons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 13, "Moyenne": 20, "1/2 Moyenne": 10, "Large": 29, "1/2 Large": 14.5, "1/4 m": 15, "1/2 mètre": 29, "1 mètre": 58 },
-  "Kentucky: Poulet Kentucky, Champignons, Oignons, Poivrons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 14, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 30, "1/2 Large": 15, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
-  "Norwegian: Saumon Fumé, Crème Fraîche, Mozzarella": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
-  "Sea Food: Fruits de Mer, Poivrons, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
-  "Newton: Poulet Grillé, Poulet Pané, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 34, "1/2 Large": 17, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
-  "Einstein: Viande de Bœuf Hachée, Champignons, Tomates Fraîches, Oignons, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 34, "1/2 Large": 17, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
-  "Barlow: Viande de Bœuf Hachée, Jambon, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 34, "1/2 Large": 17, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
-  "Millikan: Anchois, Filet de Sardine, Olives, Poivrons, Sauce Tomate, Mozzarella": { "Petite": 17.5, "Moyenne": 25, "1/2 Moyenne": 12.5, "Large": 37, "1/2 Large": 18.5, "1/4 m": 19, "1/2 mètre": 37, "1 mètre": 74 },
-  "Ampere: Pepperoni, Viande de Bœuf Hachée, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": { "Petite": 17.5, "Moyenne": 25, "1/2 Moyenne": 12.5, "Large": 37, "1/2 Large": 18.5, "1/4 m": 19, "1/2 mètre": 37, "1 mètre": 74 },
-  "Gauss: Thon, Œuf, Roquefort, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
-  "John Locke: Poulet Pané, Sauce Piquante, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
-  "Pesto: Sauce Pesto, Mozzarella, Pepperoni": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
-  "Chicken Spicy: Poulet Pané, Sauce Piquante, Poivrons, Oignons, Olives, Champignons, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
-  "Carnot: Gruyère, Oignons, Poivrons, Champignons, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 25, "1/2 Moyenne": 12.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
-  "Mariotte: Poulet Pané, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella": { "Petite": 15.5, "Moyenne": 25, "1/2 Moyenne": 12.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
-  "Kepler: Crevettes, Champignons, Oignons, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 24, "1/2 Moyenne": 12, "Large": 34, "1/2 Large": 17, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 },
-  "Van der Waals: Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
-  "Tesla: Suprême de Poulet Fumé, Sauce Tomate, Mozzarella": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 },
-  "The Wise: Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella": { "Petite": 15, "Moyenne": 23, "1/2 Moyenne": 11.5, "Large": 33, "1/2 Large": 16.5, "1/4 m": 17, "1/2 mètre": 33, "1 mètre": 66 }
-}
+    "Margherita": { "Petite": 11, "Moyenne": 15, "Grande": 19, "1/4m": 12, "1/2 mètre": 13, "1 mètre": 17, "Moyenne deux choix": 15, "Grande deux choix": 19 },
+    "Tuna": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 26, "1/4m": 14.5, "1/2 mètre": 22, "1 mètre": 32, "Moyenne deux choix": 17.5, "Grande deux choix": 26 },
+    "4 Seasons": { "Petite": 14.5, "Moyenne": 22, "Grande": 32, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "Vegetarien": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 17.5, "Grande deux choix": 28 },
+    "Queen": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28, "Moyenne deux choix": 17, "Grande deux choix": 25 },
+    "Marguerita": { "Petite": 11, "Moyenne": 15, "Grande": 23, "1/4m": 13, "1/2 mètre": 13, "1 mètre": 23, "Moyenne deux choix": 15, "Grande deux choix": 23 },
+    "Orientale": { "Petite": 12, "Moyenne": 17.5, "Grande": 23, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 24, "Moyenne deux choix": 17.5, "Grande deux choix": 23 },
+    "Pepperoni": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 17.5, "Grande deux choix": 28 },
+    "Chicken Supreme": { "Petite": 15, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 32, "1 mètre": 64, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "4 Cheese": { "Petite": 12.5, "Moyenne": 17.5, "Grande": 28, "1/4m": 14.5, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 17.5, "Grande deux choix": 28 },
+    "Regina": { "Petite": 12, "Moyenne": 17, "Grande": 25, "1/4m": 14, "1/2 mètre": 14, "1 mètre": 28, "Moyenne deux choix": 17, "Grande deux choix": 25 },
+    "Chicken Grilli": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 14, "1/2 mètre": 28, "1 mètre": 56, "Moyenne deux choix": 20, "Grande deux choix": 29 },
+    "Mexicain": { "Petite": 13, "Moyenne": 20, "Grande": 29, "1/4m": 15, "1/2 mètre": 29, "1 mètre": 58, "Moyenne deux choix": 20, "Grande deux choix": 29 },
+    "Kentucky": { "Petite": 14, "Moyenne": 21, "Grande": 30, "1/4m": 15, "1/2 mètre": 30, "1 mètre": 60, "Moyenne deux choix": 21, "Grande deux choix": 30 },
+    "Norwegian": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70, "Moyenne deux choix": 27, "Grande deux choix": 35 },
+    "Sea Food": { "Petite": 17, "Moyenne": 27, "Grande": 35, "1/4m": 19, "1/2 mètre": 35, "1 mètre": 70, "Moyenne deux choix": 27, "Grande deux choix": 35 },
+    "Newton": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32, "Moyenne deux choix": 29, "Grande deux choix": 32 },
+    "Einstein": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32, "Moyenne deux choix": 29, "Grande deux choix": 32 },
+    "Barlow": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32, "Moyenne deux choix": 29, "Grande deux choix": 32 },
+    "Millikan": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32, "Moyenne deux choix": 29, "Grande deux choix": 32 },
+    "Ampere": { "Petite": 18, "Moyenne": 29, "Grande": 32, "1/4m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32, "Moyenne deux choix": 29, "Grande deux choix": 32 },
+    "Gauss": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "John Locke": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "Pesto": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "Chicken Spicy": { "Petite": 13, "Moyenne": 22, "Grande": 32, "1/4m": 16, "1/2 mètre": 16, "1 mètre": 32, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "Carnot": { "Petite": 15.5, "Moyenne": 22, "Grande": 32, "1/4m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32, "Moyenne deux choix": 22, "Grande deux choix": 32 },
+    "Mariotte": { "Petite": 14.5, "Moyenne": 21, "Grande": 32, "1/4m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32, "Moyenne deux choix": 21, "Grande deux choix": 32 },
+    "Kepler": { "Petite": 14, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 21, "Grande deux choix": 32 },
+    "Van der waals": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32, "Moyenne deux choix": 21, "Grande deux choix": 32 },
+    "Tesla": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 21, "Grande deux choix": 32 },
+    "The Wise": { "Petite": 13, "Moyenne": 21, "Grande": 32, "1/4m": 17, "1/2 mètre": 17, "1 mètre": 32, "Moyenne deux choix": 21, "Grande deux choix": 32 }
+  };
 
-
-
+  // Pizza descriptions mapping
+  const pizzaDescriptions = {
+    "Margherita": "Sauce Tomate, Mozzarella",
+    "Tuna": "Thon, Tomates Fraîches, Oignons, Olives, Sauce Tomate, Mozzarella",
+    "4 Seasons": "Thon, Jambon de Dinde, Champignons, Poivrons, Oignons, Olives, Mozzarella, Sauce Tomate",
+    "Vegetarien": "Champignons, Poivrons, Oignons, Olives, Tomates Fraîches, Mozzarella, Sauce Tomate",
+    "Queen": "Jambon de Dinde, Champignons, Mozzarella, Sauce Tomate",
+    "Marguerita": "Sauce Tomate, Mozzarella",
+    "Orientale": "Merguez, Poivrons, Oignons, Champignons, Tomates Fraîches, Sauce Tomate, Mozzarella",
+    "Pepperoni": "Pepperoni, Oignons, Sauce Tomate, Mozzarella",
+    "Chicken Supreme": "Poulet, Champignons, Poivrons, Sauce Tomate, Mozzarella",
+    "4 Cheese": "Sauce Tomate, Mozzarella, Fromage, Sauce Blanche",
+    "Regina": "Jambon de Dinde, Champignons, Oignons, Olives, Sauce Tomate, Mozzarella",
+    "Chicken Grilli": "Émincés de Poulet Grillés, Poivrons, Champignons, Oignons, Sauce Tomate, Mozzarella",
+    "Mexicain": "Poivrons, Piments Jalapeños, Champignons, Oignons, Tomates, Sauce Tomate, Mozzarella",
+    "Kentucky": "Poulet Kentucky, Champignons, Oignons, Poivrons, Tomates, Sauce Tomate, Mozzarella",
+    "Norwegian": "Saumon Fumé, Crème Fraîche, Mozzarella",
+    "Sea Food": "Fruits de Mer, Poivrons, Oignons, Olives, Sauce Tomate, Mozzarella",
+    "Newton": "Poulet Grillé, Poulet Pané, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella",
+    "Einstein": "Viande de Bœuf Hachée, Champignons, Tomates Fraîches, Oignons, Sauce Tomate, Mozzarella",
+    "Barlow": "Viande de Bœuf Hachée, Jambon, Champignons, Poivrons, Oignons, Tomates, Sauce Tomate, Mozzarella",
+    "Millikan": "Anchois, Filet de Sardine, Olives, Poivrons, Sauce Tomate, Mozzarella",
+    "Ampere": "Pepperoni, Viande de Bœuf Hachée, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella",
+    "Gauss": "Thon, Œuf, Roquefort, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella",
+    "John Locke": "Poulet Pané, Sauce Piquante, Oignons, Poivrons, Olives, Sauce Tomate, Mozzarella",
+    "Pesto": "Sauce Pesto, Mozzarella, Pepperoni",
+    "Chicken Spicy": "Poulet Pané, Sauce Piquante, Poivrons, Oignons, Olives, Champignons, Sauce Tomate, Mozzarella",
+    "Carnot": "Gruyère, Oignons, Poivrons, Champignons, Sauce Tomate, Mozzarella",
+    "Mariotte": "Poulet Pané, Gruyère, Oignons, Olives, Sauce Tomate, Mozzarella",
+    "Kepler": "Crevettes, Champignons, Oignons, Sauce Tomate, Mozzarella",
+    "Van der waals": "Viande Hachée, Champignons, Oignons, Mozzarella, Sauce Barbecue",
+    "Tesla": "Suprême de Poulet Fumé, Sauce Tomate, Mozzarella",
+    "The Wise": "Saumon Fumé, Crevettes, Fruits de Mer, Mozzarella"
+  };
 
   const menuCategories = [
     {
@@ -572,21 +728,26 @@ const MenuSection = () => {
         </div>
 
         {/* Floating Order Button */}
-        {(totalItems > 0 || quarterMeterPizzas.length > 0) && (
-          <div className="fixed bottom-8 right-8 z-50 animate-scale-in">
+        {(totalItems > 0 || quarterMeterPizzas.length > 0 || halfMeterPizzas.length > 0 || mediumDeuxChoixPizzas.length > 0 || largeDeuxChoixPizzas.length > 0) && (
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:bottom-8 md:left-auto md:right-8 md:translate-x-0 z-50 animate-scale-in w-[90%] md:w-auto">
             <Button
               onClick={handleCommander}
               size="lg"
-              className="rounded-full shadow-2xl bg-restaurant-red hover:bg-restaurant-red-dark text-white glow-on-hover h-16 px-8"
+              className="w-full md:w-auto rounded-full shadow-2xl bg-restaurant-red hover:bg-restaurant-red-dark text-white glow-on-hover h-16 px-6 md:px-8 text-sm md:text-base"
             >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Commander ({totalItems + (quarterMeterPizzas.length > 0 ? 1 : 0)})
-              {totalPrice > 0 && ` - ${totalPrice.toFixed(2)}dt`}
-              {quarterMeterPizzas.length > 0 && (
-                <span className="ml-2 text-xs">
-                  (1/4m: {quarterMeterPizzas.length}/4)
-                </span>
-              )}
+              <ShoppingCart className="mr-2 h-5 w-5 flex-shrink-0" />
+              <div className="flex flex-col items-start md:flex-row md:items-center gap-1 md:gap-2">
+                <span>Commander ({totalItems})</span>
+                {totalPrice > 0 && <span className="font-bold">{totalPrice.toFixed(2)}dt</span>}
+                {(quarterMeterPizzas.length > 0 || halfMeterPizzas.length > 0 || mediumDeuxChoixPizzas.length > 0 || largeDeuxChoixPizzas.length > 0) && (
+                  <span className="text-xs opacity-90">
+                    {quarterMeterPizzas.length > 0 && `1/4m: ${quarterMeterPizzas.length}/4 `}
+                    {halfMeterPizzas.length > 0 && `1/2m: ${halfMeterPizzas.length}/2 `}
+                    {mediumDeuxChoixPizzas.length > 0 && `Moy: ${mediumDeuxChoixPizzas.length}/2 `}
+                    {largeDeuxChoixPizzas.length > 0 && `Gde: ${largeDeuxChoixPizzas.length}/2`}
+                  </span>
+                )}
+              </div>
             </Button>
           </div>
         )}
@@ -608,9 +769,12 @@ const MenuSection = () => {
                     <div className="space-y-4">
                       {category.pizzas?.map((pizzaName: string, pizzaIndex: number) => (
                         <div key={pizzaIndex} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
-                          <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral mb-3">
+                          <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral mb-1">
                             {pizzaName}
                           </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {pizzaDescriptions[pizzaName as keyof typeof pizzaDescriptions]}
+                          </p>
                           <div className="flex gap-2 items-center flex-wrap">
                             <Select
                               value={pizzaSizes[pizzaName] || ""}
@@ -646,7 +810,7 @@ const MenuSection = () => {
                             key={imgIndex}
                             src={img} 
                             alt={`${category.title} ${imgIndex + 1}`}
-                            className="max-w-lg w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                            className="max-w-2xl w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
                             style={{
                               filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
                             }}

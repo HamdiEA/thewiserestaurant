@@ -20,8 +20,8 @@ const Footer = () => {
       name: "Ben Arous Tunis", 
       phone: "94 722 566", 
       address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS",
-      maps: "",
-      facebook: ""
+      maps: "https://maps.app.goo.gl/fVMVXqeftafH3LQz8",
+      facebook: "https://www.facebook.com/profile.php?id=61570081937204"
     }
   ];
 

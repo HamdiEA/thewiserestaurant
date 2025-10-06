@@ -33,7 +33,6 @@ const MenuSection = () => {
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [pizzaSizes, setPizzaSizes] = useState<Record<string, string>>({});
   const [quarterMeterPizzas, setQuarterMeterPizzas] = useState<string[]>([]);
-  const [halfMeterPizzas, setHalfMeterPizzas] = useState<string[]>([]);
   const [cheeseCrust, setCheeseCrust] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
@@ -766,7 +765,7 @@ const MenuSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-restaurant-red/5 to-transparent pointer-events-none"></div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 animate-fade-in">
+        <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-warm-neutral mb-4">
             Notre Menu Complet
           </h2>
@@ -776,21 +775,20 @@ const MenuSection = () => {
         </div>
 
         {/* Floating Order Button */}
-        {(totalItems > 0 || quarterMeterPizzas.length > 0 || halfMeterPizzas.length > 0) && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:bottom-8 md:left-auto md:right-8 md:translate-x-0 z-50 animate-scale-in w-[90%] md:w-auto">
+        {(totalItems > 0 || quarterMeterPizzas.length > 0) && (
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:bottom-8 md:left-auto md:right-8 md:translate-x-0 z-50 w-[90%] md:w-auto">
             <Button
               onClick={handleCommander}
               size="lg"
-              className="w-full md:w-auto rounded-full shadow-2xl bg-restaurant-red hover:bg-restaurant-red-dark text-white glow-on-hover h-16 px-6 md:px-8 text-sm md:text-base"
+              className="w-full md:w-auto rounded-full shadow-2xl bg-red-600 hover:bg-red-700 text-white h-16 px-6 md:px-8 text-sm md:text-base"
             >
               <ShoppingCart className="mr-2 h-5 w-5 flex-shrink-0" />
               <div className="flex flex-col items-start md:flex-row md:items-center gap-1 md:gap-2">
                 <span>Commander ({totalItems})</span>
                 {totalPrice > 0 && <span className="font-bold">{totalPrice.toFixed(2)}dt</span>}
-                {(quarterMeterPizzas.length > 0 || halfMeterPizzas.length > 0) && (
+                {quarterMeterPizzas.length > 0 && (
                   <span className="text-xs opacity-90">
-                    {quarterMeterPizzas.length > 0 && `1/4m: ${quarterMeterPizzas.length}/4 `}
-                    {halfMeterPizzas.length > 0 && `1/2m: ${halfMeterPizzas.length}/2`}
+                    1/4m: {quarterMeterPizzas.length}/4
                   </span>
                 )}
               </div>
@@ -800,8 +798,8 @@ const MenuSection = () => {
 
         <div className="grid gap-8">
           {menuCategories.map((category, index) => (
-            <Card key={index} className="shadow-lg card-hover-effect animate-scale-in border-2 border-border/50" style={{ animationDelay: `${index * 0.1}s` }}>
-              <CardHeader className="bg-gradient-to-r from-restaurant-red to-restaurant-red-dark text-white">
+            <Card key={index} className="shadow-lg border-2 border-border/50" style={{ animationDelay: `${index * 0.1}s` }}>
+              <CardHeader className="bg-gradient-to-r from-red-600 to-red-700 text-white">
                 <CardTitle className="text-2xl font-bold text-center">
                   {category.title}
                 </CardTitle>
@@ -814,8 +812,8 @@ const MenuSection = () => {
                   <div className="grid lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       {category.pizzas?.map((pizzaName: string, pizzaIndex: number) => (
-                        <div key={pizzaIndex} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
-                          <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral mb-1">
+                        <div key={pizzaIndex} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
+                          <h4 className="font-semibold text-lg text-warm-neutral mb-1">
                             {pizzaName}
                           </h4>
                           <p className="text-sm text-muted-foreground mb-3">
@@ -842,7 +840,7 @@ const MenuSection = () => {
                               <Button
                                 onClick={() => handlePizzaOrder(pizzaName, pizzaSizesData[pizzaName])}
                                 size="sm"
-                                className="bg-restaurant-red hover:bg-restaurant-red-dark text-white"
+                                className="bg-red-600 hover:bg-red-700 text-white"
                               >
                                 <Plus className="h-4 w-4 mr-1" />
                                 Ajouter
@@ -864,7 +862,7 @@ const MenuSection = () => {
                                     }));
                                   }
                                 }}
-                                className="rounded border-gray-300 text-restaurant-red focus:ring-restaurant-red"
+                                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                               />
                               <label htmlFor={`cheese-crust-${pizzaIndex}`} className="text-sm">
                                 Supplément croûte fromage
@@ -899,10 +897,10 @@ const MenuSection = () => {
                       {category.description && (
                         <p className="text-sm text-muted-foreground italic mb-4">{category.description}</p>
                       )}
-                      {category.items && category.items.map((item: any, itemIndex) => (
-                        <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
+                      {category.items && category.items.map((item: any, itemIndex: number) => (
+                        <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
+                            <h4 className="font-semibold text-lg text-warm-neutral">
                               {item.name}
                             </h4>
                             {item.description && (
@@ -913,7 +911,7 @@ const MenuSection = () => {
                           </div>
                           <div className="flex items-center gap-2 ml-4">
                             {item.price && (
-                              <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
+                              <Badge variant="secondary" className="bg-red-100 text-red-700 border-red-200">
                                 {item.price}
                               </Badge>
                             )}
@@ -921,7 +919,7 @@ const MenuSection = () => {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                className="h-7 w-7 rounded-full hover:bg-red-600 hover:text-white"
                                 onClick={() => handleQuantityChange(item.name, item, -1, true)}
                               >
                                 <Minus className="h-3 w-3" />
@@ -932,7 +930,7 @@ const MenuSection = () => {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                className="h-7 w-7 rounded-full hover:bg-red-600 hover:text-white"
                                 onClick={() => handleQuantityChange(item.name, item, 1, true)}
                               >
                                 <Plus className="h-3 w-3" />
@@ -941,16 +939,16 @@ const MenuSection = () => {
                           </div>
                         </div>
                       ))}
-                      {category.sections && category.sections.map((section: any, sectionIndex) => (
+                      {category.sections && category.sections.map((section: any, sectionIndex: number) => (
                         <div key={sectionIndex} className="space-y-3">
-                          <h3 className="font-bold text-xl text-restaurant-red mt-4 flex items-center gap-2">
-                            <span className="h-1 w-8 bg-restaurant-red rounded"></span>
+                          <h3 className="font-bold text-xl text-red-600 mt-4 flex items-center gap-2">
+                            <span className="h-1 w-8 bg-red-600 rounded"></span>
                             {section.subtitle}
                           </h3>
                           {section.items.map((item: any, itemIndex: number) => (
-                            <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg group">
+                            <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
                               <div className="flex-1">
-                                <h4 className="font-semibold text-lg group-hover:text-restaurant-red transition-colors text-warm-neutral">
+                                <h4 className="font-semibold text-lg text-warm-neutral">
                                   {item.name}
                                 </h4>
                                 {item.description && (
@@ -961,7 +959,7 @@ const MenuSection = () => {
                               </div>
                               <div className="flex items-center gap-2 ml-4">
                                 {item.price && (
-                                  <Badge variant="secondary" className="bg-restaurant-red/10 text-restaurant-red border-restaurant-red/20">
+                                  <Badge variant="secondary" className="bg-red-100 text-red-700 border-red-200">
                                     {item.price}
                                   </Badge>
                                 )}
@@ -969,7 +967,7 @@ const MenuSection = () => {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                    className="h-7 w-7 rounded-full hover:bg-red-600 hover:text-white"
                                     onClick={() => handleQuantityChange(item.name, item, -1, true)}
                                   >
                                     <Minus className="h-3 w-3" />
@@ -980,7 +978,7 @@ const MenuSection = () => {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 rounded-full hover:bg-restaurant-red hover:text-white"
+                                    className="h-7 w-7 rounded-full hover:bg-red-600 hover:text-white"
                                     onClick={() => handleQuantityChange(item.name, item, 1, true)}
                                   >
                                     <Plus className="h-3 w-3" />

@@ -10,18 +10,18 @@ const Footer = () => {
       facebook: "https://www.facebook.com/profile.php?id=100083865516162"
     },
     { 
-      name: "Ben Arous Tunis", 
-      phone: "94 722 566", 
-      address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS",
-      maps: "",
-      facebook: "https://www.facebook.com/profile.php?id=61570081937204"
-    },
-    { 
       name: "Ksar Hellal Monastir", 
       phone: "52 555 400", 
       address: "AV HAJ ALI SOUA KSAR HELLAL - MONASTIR",
       maps: "https://maps.app.goo.gl/wd9MgJQgfEfK6JiS6",
       facebook: "https://www.facebook.com/profile.php?id=100058908593379"
+    },
+    { 
+      name: "Ben Arous Tunis", 
+      phone: "94 722 566", 
+      address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS",
+      maps: "",
+      facebook: ""
     }
   ];
 

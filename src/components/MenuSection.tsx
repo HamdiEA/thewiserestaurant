@@ -39,14 +39,14 @@ const MenuSection = () => {
 
   // Cheese crust prices for different sizes
   const cheeseCrustPrices = {
-    "Petite": 1.5,
-    "Moyenne": 2,
-    "Large": 2.5,
-    "1/2 Moyenne": 1,
-    "1/2 Large": 1.25,
-    "1/4 m": 1.5,
-    "1/2 mètre": 2.5,
-    "1 mètre": 4
+    "Petite": 6,
+    "Moyenne": 9,
+    "Large": 13,
+    "1/2 Moyenne": 4.5, // Half of Moyenne (9/2)
+    "1/2 Large": 6.5,  // Half of Large (13/2)
+    "1/4 m": 6,        // Same as Petite
+    "1/2 mètre": 15,
+    "1 mètre": 25
   };
 
   const handlePizzaOrder = (pizzaName: string, sizes: any) => {
@@ -102,6 +102,91 @@ const MenuSection = () => {
     const price = basePrice + cheeseCrustPrice;
     
     const itemKey = `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' - avec croûte fromage' : ''}`;
+    
+    // Check if there's a similar pizza with different options
+    const similarPizzaKey = Object.keys(orderItems).find(key => 
+      key.startsWith(pizzaName) && 
+      key !== itemKey && 
+      (key.includes(selectedSize) || key.includes('croûte fromage'))
+    );
+    
+    if (similarPizzaKey) {
+      const similarPizza = orderItems[similarPizzaKey];
+      const similarSize = similarPizza.size;
+      const similarHasCheeseCrust = similarPizza.cheeseCrust || false;
+      
+      toast({
+        title: "Pizza similaire détectée",
+        description: `Vous avez déjà une ${pizzaName} (${similarSize})${similarHasCheeseCrust ? ' avec croûte fromage' : ''} dans votre panier.`,
+        action: (
+          <div className="flex gap-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Remove the existing pizza
+                setOrderItems(prev => {
+                  const { [similarPizzaKey]: _, ...rest } = prev;
+                  return rest;
+                });
+                
+                // Add the new pizza
+                setOrderItems(prev => ({
+                  ...prev,
+                  [itemKey]: { 
+                    name: pizzaName, 
+                    size: selectedSize, 
+                    price, 
+                    quantity: 1,
+                    cheeseCrust: hasCheeseCrust 
+                  }
+                }));
+                
+                toast({
+                  title: "Pizza remplacée",
+                  description: `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' avec croûte fromage' : ''} a été ajoutée`,
+                });
+              }}
+            >
+              Remplacer
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                // Add cheese crust to the existing pizza if it doesn't have it
+                if (!similarHasCheeseCrust && hasCheeseCrust) {
+                  const updatedKey = `${pizzaName} (${similarSize}) - avec croûte fromage`;
+                  const updatedPrice = similarPizza.price + cheeseCrustPrices[similarSize as keyof typeof cheeseCrustPrices];
+                  
+                  setOrderItems(prev => ({
+                    ...prev,
+                    [updatedKey]: { 
+                      ...similarPizza, 
+                      price: updatedPrice,
+                      cheeseCrust: true
+                    }
+                  }));
+                  
+                  // Remove the old key
+                  const { [similarPizzaKey]: _, ...rest } = prev;
+                  return rest;
+                }
+                
+                toast({
+                  title: "Supplément ajouté",
+                  description: `La croûte fromage a été ajoutée à votre ${pizzaName}`,
+                });
+              }}
+            >
+              Ajouter supplément
+            </Button>
+          </div>
+        ),
+        duration: 10000,
+      });
+      return;
+    }
     
     setOrderItems(prev => {
       const existing = prev[itemKey];

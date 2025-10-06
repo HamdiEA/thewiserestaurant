@@ -25,6 +25,7 @@ interface OrderItem {
   name: string;
   size?: string;
   price: number;
+  cheeseCrust?: boolean;
 }
 
 const MenuSection = () => {
@@ -33,71 +34,97 @@ const MenuSection = () => {
   const [pizzaSizes, setPizzaSizes] = useState<Record<string, string>>({});
   const [quarterMeterPizzas, setQuarterMeterPizzas] = useState<string[]>([]);
   const [halfMeterPizzas, setHalfMeterPizzas] = useState<string[]>([]);
+  const [cheeseCrust, setCheeseCrust] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
 
+  // Cheese crust prices for different sizes
+  const cheeseCrustPrices = {
+    "Petite": 1.5,
+    "Moyenne": 2,
+    "Large": 2.5,
+    "1/2 Moyenne": 1,
+    "1/2 Large": 1.25,
+    "1/4 m": 1.5,
+    "1/2 mètre": 2.5,
+    "1 mètre": 4
+  };
+
   const handlePizzaOrder = (pizzaName: string, sizes: any) => {
-  const selectedSize = pizzaSizes[pizzaName];
-  
-  if (!selectedSize) {
-    toast({
-      title: "Veuillez sélectionner une taille",
-      description: "Choisissez la taille de votre pizza",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  // Handle 1/4m selections for meter pizzas
-  if (selectedSize === "1/4 m") {
-    // Check if this pizza is already selected
-    if (quarterMeterPizzas.includes(pizzaName)) {
+    const selectedSize = pizzaSizes[pizzaName];
+    
+    if (!selectedSize) {
       toast({
-        title: "Déjà ajouté",
-        description: `${pizzaName} est déjà dans votre sélection`,
+        title: "Veuillez sélectionner une taille",
+        description: "Choisissez la taille de votre pizza",
         variant: "destructive",
       });
       return;
     }
-    
-    // Add to selection (max 4 for 1m, or max 2 for 1/2m)
-    if (quarterMeterPizzas.length >= 4) {
+
+    // Handle 1/4m selections for meter pizzas
+    if (selectedSize === "1/4 m") {
+      // Check if this pizza is already selected
+      if (quarterMeterPizzas.includes(pizzaName)) {
+        toast({
+          title: "Déjà ajouté",
+          description: `${pizzaName} est déjà dans votre sélection`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Add to selection (max 4 for 1m, or max 2 for 1/2m)
+      if (quarterMeterPizzas.length >= 4) {
+        toast({
+          title: "Sélection complète",
+          description: "Vous avez déjà sélectionné le maximum de pizzas pour une pizza 1m",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setQuarterMeterPizzas(prev => [...prev, pizzaName]);
+      
+      const remainingForFull = 4 - quarterMeterPizzas.length - 1;
+      const remainingForHalf = 2 - quarterMeterPizzas.length - 1;
+      
       toast({
-        title: "Sélection complète",
-        description: "Vous avez déjà sélectionné le maximum de pizzas pour une pizza 1m",
-        variant: "destructive",
+        title: "Pizza 1/4m ajoutée",
+        description: `${pizzaName} ajouté. Vous pouvez maintenant créer une pizza 1/2m (${remainingForHalf >= 0 ? remainingForHalf : 0} restante) ou 1m (${remainingForFull >= 0 ? remainingForFull : 0} restantes)`,
       });
       return;
     }
     
-    setQuarterMeterPizzas(prev => [...prev, pizzaName]);
+    // Handle regular pizza sizes
+    const basePrice = sizes[selectedSize];
+    const hasCheeseCrust = cheeseCrust[`${pizzaName} (${selectedSize})`] || false;
+    const cheeseCrustPrice = hasCheeseCrust ? cheeseCrustPrices[selectedSize as keyof typeof cheeseCrustPrices] || 0 : 0;
+    const price = basePrice + cheeseCrustPrice;
     
-    const remainingForFull = 4 - quarterMeterPizzas.length - 1;
-    const remainingForHalf = 2 - quarterMeterPizzas.length - 1;
+    const itemKey = `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' - avec croûte fromage' : ''}`;
     
-    toast({
-      title: "Pizza 1/4m ajoutée",
-      description: `${pizzaName} ajouté. Vous pouvez maintenant créer une pizza 1/2m (${remainingForHalf >= 0 ? remainingForHalf : 0} restante) ou 1m (${remainingForFull >= 0 ? remainingForFull : 0} restantes)`,
+    setOrderItems(prev => {
+      const existing = prev[itemKey];
+      if (existing) {
+        return { ...prev, [itemKey]: { ...existing, quantity: existing.quantity + 1 } };
+      }
+      return { 
+        ...prev, 
+        [itemKey]: { 
+          name: pizzaName, 
+          size: selectedSize, 
+          price, 
+          quantity: 1,
+          cheeseCrust: hasCheeseCrust 
+        } 
+      };
     });
-    return;
-  }
-  
-  // Handle regular pizza sizes
-  const price = sizes[selectedSize];
-  const itemKey = `${pizzaName} (${selectedSize})`;
-  
-  setOrderItems(prev => {
-    const existing = prev[itemKey];
-    if (existing) {
-      return { ...prev, [itemKey]: { ...existing, quantity: existing.quantity + 1 } };
-    }
-    return { ...prev, [itemKey]: { name: pizzaName, size: selectedSize, price, quantity: 1 } };
-  });
 
-  toast({
-    title: "Ajouté au panier",
-    description: `${pizzaName} ajouté`,
-  });
-};
+    toast({
+      title: "Ajouté au panier",
+      description: `${pizzaName} ajouté${hasCheeseCrust ? ' avec croûte fromage' : ''}`,
+    });
+  };
 
   const handleQuantityChange = (itemKey: string, item: any, delta: number, isDirectPrice: boolean = false) => {
     if (!isDirectPrice) return; // Only allow direct price items for now
@@ -133,88 +160,83 @@ const MenuSection = () => {
   };
 
   const handleCommander = () => {
-  // Check if we have any 1/4m pizzas selected
-  if (quarterMeterPizzas.length > 0) {
-    // Check if we can make a 1/2m pizza (exactly 2 selections)
-    if (quarterMeterPizzas.length === 2) {
-      const halfMeterKey = `Pizza 1/2 Mètre (${quarterMeterPizzas.join(", ")})`;
-      // Calculate total price by summing the 1/4m prices of each pizza
-      const totalPrice = quarterMeterPizzas.reduce((sum, pizzaName) => {
-        return sum + (pizzaSizesData[pizzaName]["1/4 m"] || 12);
-      }, 0);
-      
-      setOrderItems(prev => ({
-        ...prev,
-        [halfMeterKey]: {
-          name: `Pizza 1/2 Mètre`,
-          size: "1/2 Mètre",
-          price: totalPrice,
-          quantity: 1
+    // Check if we have any 1/4m pizzas selected
+    if (quarterMeterPizzas.length > 0) {
+      // Check if we can make a 1/2m pizza (exactly 2 selections)
+      if (quarterMeterPizzas.length === 2) {
+        const halfMeterKey = `Pizza 1/2 Mètre (${quarterMeterPizzas.join(", ")})`;
+        // Calculate total price by summing the 1/4m prices of each pizza
+        let totalPrice = quarterMeterPizzas.reduce((sum, pizzaName) => {
+          return sum + (pizzaSizesData[pizzaName]["1/4 m"] || 12);
+        }, 0);
+        
+        // Add cheese crust price if any of the pizzas has it selected
+        const hasCheeseCrust = quarterMeterPizzas.some(pizzaName => 
+          cheeseCrust[`${pizzaName} (1/4 m)`]
+        );
+        
+        if (hasCheeseCrust) {
+          totalPrice += cheeseCrustPrices["1/2 mètre"];
         }
-      }));
-      
-      // Clear the selection
-      setQuarterMeterPizzas([]);
-    }
-    // Check if we can make a 1m pizza (exactly 4 selections)
-    else if (quarterMeterPizzas.length === 4) {
-      const fullMeterKey = `Pizza 1 Mètre (${quarterMeterPizzas.join(", ")})`;
-      // Calculate total price by summing the 1/4m prices of each pizza
-      const totalPrice = quarterMeterPizzas.reduce((sum, pizzaName) => {
-        return sum + (pizzaSizesData[pizzaName]["1/4 m"] || 12);
-      }, 0);
-      
-      setOrderItems(prev => ({
-        ...prev,
-        [fullMeterKey]: {
-          name: `Pizza 1 Mètre`,
-          size: "1 Mètre",
-          price: totalPrice,
-          quantity: 1
-        }
-      }));
-      
-      // Clear the selection
-      setQuarterMeterPizzas([]);
-    }
-    // Invalid number of selections
-    else {
-      toast({
-        title: "Sélection incomplète",
-        description: `Pour créer une pizza mètre, vous devez sélectionner soit 2 pizzas (pour 1/2m) soit 4 pizzas (pour 1m). Actuellement: ${quarterMeterPizzas.length} sélectionnée(s).`,
-        variant: "destructive",
-      });
-      return;
-    }
-  }
-  
-  setShowOrderDialog(true);
-};
-  
-  // If we have exactly 2 half meter pizzas, add them to order
-  if (halfMeterPizzas.length === 2) {
-    const halfMeterKey = `Pizza 1/2 Mètre (${halfMeterPizzas.join(", ")})`;
-    // Calculate total price by summing the 1/2m prices of each pizza
-    const totalPrice = halfMeterPizzas.reduce((sum, pizzaName) => {
-      return sum + (pizzaSizesData[pizzaName]["1/2 mètre"] || 13);
-    }, 0);
-    
-    setOrderItems(prev => ({
-      ...prev,
-      [halfMeterKey]: {
-        name: `Pizza 1/2 Mètre`,
-        size: "1/2 Mètre",
-        price: totalPrice,
-        quantity: 1
+        
+        setOrderItems(prev => ({
+          ...prev,
+          [halfMeterKey]: {
+            name: `Pizza 1/2 Mètre`,
+            size: "1/2 Mètre",
+            price: totalPrice,
+            quantity: 1,
+            cheeseCrust: hasCheeseCrust
+          }
+        }));
+        
+        // Clear the selection
+        setQuarterMeterPizzas([]);
       }
-    }));
+      // Check if we can make a 1m pizza (exactly 4 selections)
+      else if (quarterMeterPizzas.length === 4) {
+        const fullMeterKey = `Pizza 1 Mètre (${quarterMeterPizzas.join(", ")})`;
+        // Calculate total price by summing the 1/4m prices of each pizza
+        let totalPrice = quarterMeterPizzas.reduce((sum, pizzaName) => {
+          return sum + (pizzaSizesData[pizzaName]["1/4 m"] || 12);
+        }, 0);
+        
+        // Add cheese crust price if any of the pizzas has it selected
+        const hasCheeseCrust = quarterMeterPizzas.some(pizzaName => 
+          cheeseCrust[`${pizzaName} (1/4 m)`]
+        );
+        
+        if (hasCheeseCrust) {
+          totalPrice += cheeseCrustPrices["1 mètre"];
+        }
+        
+        setOrderItems(prev => ({
+          ...prev,
+          [fullMeterKey]: {
+            name: `Pizza 1 Mètre`,
+            size: "1 Mètre",
+            price: totalPrice,
+            quantity: 1,
+            cheeseCrust: hasCheeseCrust
+          }
+        }));
+        
+        // Clear the selection
+        setQuarterMeterPizzas([]);
+      }
+      // Invalid number of selections
+      else {
+        toast({
+          title: "Sélection incomplète",
+          description: `Pour créer une pizza mètre, vous devez sélectionner soit 2 pizzas (pour 1/2m) soit 4 pizzas (pour 1m). Actuellement: ${quarterMeterPizzas.length} sélectionnée(s).`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
     
-    // Clear the half meter selection
-    setHalfMeterPizzas([]);
-  }
-  
-  setShowOrderDialog(true);
-};
+    setShowOrderDialog(true);
+  };
 
   const totalItems = Object.values(orderItems).reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -714,30 +736,58 @@ const MenuSection = () => {
                           <p className="text-sm text-muted-foreground mb-3">
                             {pizzaDescriptions[pizzaName as keyof typeof pizzaDescriptions]}
                           </p>
-                          <div className="flex gap-2 items-center flex-wrap">
-                            <Select
-                              value={pizzaSizes[pizzaName] || ""}
-                              onValueChange={(value) => setPizzaSizes(prev => ({ ...prev, [pizzaName]: value }))}
-                            >
-                              <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Sélectionnez la taille" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(pizzaSizesData[pizzaName] || {}).map(([size, price]: [string, number]) => (
-                                  <SelectItem key={size} value={size}>
-                                    {size} - {price}dt
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              onClick={() => handlePizzaOrder(pizzaName, pizzaSizesData[pizzaName])}
-                              size="sm"
-                              className="bg-restaurant-red hover:bg-restaurant-red-dark text-white"
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Ajouter
-                            </Button>
+                          <div className="flex flex-col gap-3">
+                            <div className="flex gap-2 items-center flex-wrap">
+                              <Select
+                                value={pizzaSizes[pizzaName] || ""}
+                                onValueChange={(value) => setPizzaSizes(prev => ({ ...prev, [pizzaName]: value }))}
+                              >
+                                <SelectTrigger className="w-[180px]">
+                                  <SelectValue placeholder="Sélectionnez la taille" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(pizzaSizesData[pizzaName] || {}).map(([size, price]: [string, number]) => (
+                                    <SelectItem key={size} value={size}>
+                                      {size} - {price}dt
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              
+                              <Button
+                                onClick={() => handlePizzaOrder(pizzaName, pizzaSizesData[pizzaName])}
+                                size="sm"
+                                className="bg-restaurant-red hover:bg-restaurant-red-dark text-white"
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                Ajouter
+                              </Button>
+                            </div>
+                            
+                            {/* Cheese crust supplement option */}
+                            <div className="flex items-center space-x-2 mt-1">
+                              <input
+                                type="checkbox"
+                                id={`cheese-crust-${pizzaIndex}`}
+                                checked={cheeseCrust[`${pizzaName} (${pizzaSizes[pizzaName]})`] || false}
+                                onChange={(e) => {
+                                  const size = pizzaSizes[pizzaName];
+                                  if (size) {
+                                    setCheeseCrust(prev => ({
+                                      ...prev,
+                                      [`${pizzaName} (${size})`]: e.target.checked
+                                    }));
+                                  }
+                                }}
+                                className="rounded border-gray-300 text-restaurant-red focus:ring-restaurant-red"
+                              />
+                              <label htmlFor={`cheese-crust-${pizzaIndex}`} className="text-sm">
+                                Supplément croûte fromage
+                                {pizzaSizes[pizzaName] && (
+                                  <span> (+{cheeseCrustPrices[pizzaSizes[pizzaName] as keyof typeof cheeseCrustPrices] || 0}dt)</span>
+                                )}
+                              </label>
+                            </div>
                           </div>
                         </div>
                       ))}

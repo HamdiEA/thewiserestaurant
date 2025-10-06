@@ -5,17 +5,22 @@ const Footer = () => {
     { 
       name: "Bardo Tunis", 
       phone: "52 555 414", 
-      address: "AV HABIB BOURGUIBA (RUE DES ORANGES) 2000, BARDO TUNIS"
+      address: "AV HABIB BOURGUIBA (RUE DES ORANGES) 2000, BARDO TUNIS",
+      maps: "https://maps.app.goo.gl/9H9w18iWNMz9trQq8",
+      facebook: "https://www.facebook.com/profile.php?id=100083865516162"
     },
     { 
       name: "Ben Arous Tunis", 
       phone: "94 722 566", 
-      address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS"
+      address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS",
+      facebook: ""
     },
     { 
       name: "Ksar Hellal Monastir", 
       phone: "52 555 400", 
-      address: "AV HAJ ALI SOUA KSAR HELLAL - MONASTIR"
+      address: "AV HAJ ALI SOUA KSAR HELLAL - MONASTIR",
+      maps: "https://maps.app.goo.gl/wd9MgJQgfEfK6JiS6",
+      facebook: "https://www.facebook.com/profile.php?id=100058908593379"
     }
   ];
 

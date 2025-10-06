@@ -92,13 +92,13 @@ const MenuSection = () => {
     const cheeseCrustPrice = hasCheeseCrust ? cheeseCrustPrices[selectedSize as keyof typeof cheeseCrustPrices] || 0 : 0;
     const price = basePrice + cheeseCrustPrice;
     
-    const itemKey = `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' - avec croûte fromage' : ''}`;
+    const itemKey = `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' - with cheese crust' : ''}`;
     
     // Check if there's a similar pizza with different options
     const similarPizzaKey = Object.keys(orderItems).find(key => 
       key.startsWith(pizzaName) && 
       key !== itemKey && 
-      (key.includes(selectedSize) || key.includes('croûte fromage'))
+      (key.includes(selectedSize) || key.includes('cheese crust'))
     );
     
     if (similarPizzaKey) {
@@ -107,8 +107,8 @@ const MenuSection = () => {
       const similarHasCheeseCrust = similarPizza.cheeseCrust || false;
       
       toast({
-        title: "Pizza similaire détectée",
-        description: `Vous avez déjà une ${pizzaName} (${similarSize})${similarHasCheeseCrust ? ' avec croûte fromage' : ''} dans votre panier.`,
+        title: "Similar pizza detected",
+        description: `You already have a ${pizzaName} (${similarSize})${similarHasCheeseCrust ? ' with cheese crust' : ''} in your cart.`,
         action: (
           <div className="flex gap-2 mt-2">
             <Button 
@@ -134,12 +134,12 @@ const MenuSection = () => {
                 }));
                 
                 toast({
-                  title: "Pizza remplacée",
-                  description: `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' avec croûte fromage' : ''} a été ajoutée`,
+                  title: "Pizza replaced",
+                  description: `${pizzaName} (${selectedSize})${hasCheeseCrust ? ' with cheese crust' : ''} has been added`,
                 });
               }}
             >
-              Remplacer
+              Replace
             </Button>
             <Button 
               variant="outline" 
@@ -147,7 +147,7 @@ const MenuSection = () => {
               onClick={() => {
                 // Add cheese crust to the existing pizza if it doesn't have it
                 if (!similarHasCheeseCrust && hasCheeseCrust) {
-                  const updatedKey = `${pizzaName} (${similarSize}) - avec croûte fromage`;
+                  const updatedKey = `${pizzaName} (${similarSize}) - with cheese crust`;
                   const updatedPrice = similarPizza.price + cheeseCrustPrices[similarSize as keyof typeof cheeseCrustPrices];
                   
                   setOrderItems(prev => ({
@@ -165,12 +165,12 @@ const MenuSection = () => {
                 }
                 
                 toast({
-                  title: "Supplément ajouté",
-                  description: `La croûte fromage a été ajoutée à votre ${pizzaName}`,
+                  title: "Supplement added",
+                  description: `Cheese crust has been added to your ${pizzaName}`,
                 });
               }}
             >
-              Ajouter supplément
+              Add supplement
             </Button>
           </div>
         ),
@@ -197,8 +197,8 @@ const MenuSection = () => {
     });
 
     toast({
-      title: "Ajouté au panier",
-      description: `${pizzaName} ajouté${hasCheeseCrust ? ' avec croûte fromage' : ''}`,
+      title: "Added to cart",
+      description: `${pizzaName} added${hasCheeseCrust ? ' with cheese crust' : ''}`,
     });
   };
 
@@ -222,8 +222,8 @@ const MenuSection = () => {
         };
         
         toast({
-          title: "Ajouté au panier",
-          description: `${item.name} ajouté`,
+          title: "Added to cart",
+          description: `${item.name} added`,
         });
         
         return { 
@@ -272,7 +272,7 @@ const MenuSection = () => {
       // Check if we can make a 1m pizza (exactly 4 selections)
       else if (quarterMeterPizzas.length === 4) {
         const fullMeterKey = `Pizza 1 Mètre (${quarterMeterPizzas.join(", ")})`;
-        // Calculate total price by summing the 1/4m prices of each pizza
+        // Calculate total price by summing the 1/4m prices of each pizza (1/4m * 4)
         let totalPrice = quarterMeterPizzas.reduce((sum, pizzaName) => {
           return sum + (pizzaSizesData[pizzaName]["1/4 m"] || 12);
         }, 0);
@@ -852,7 +852,7 @@ const MenuSection = () => {
                                 className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                               />
                               <label htmlFor={`cheese-crust-${pizzaIndex}`} className="text-sm">
-                                Supplément croûte fromage
+                                Cheese crust
                                 {pizzaSizes[pizzaName] && (
                                   <span> (+{cheeseCrustPrices[pizzaSizes[pizzaName] as keyof typeof cheeseCrustPrices] || 0}dt)</span>
                                 )}

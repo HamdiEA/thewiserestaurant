@@ -13,6 +13,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Food images
+import saladImg from "@/assets/salad.jpg";
+import platsImg from "@/assets/plats.jpg";
+import pizza1Img from "@/assets/pizza1.jpg";
+import pizza2Img from "@/assets/pizza2.jpg";
+import burgerImg from "@/assets/burger.jpg";
+import drinkImg from "@/assets/drink.jpg";
+
 interface OrderItem {
   name: string;
   size?: string;
@@ -318,37 +326,37 @@ const MenuSection = () => {
   const totalPrice = Object.values(orderItems).reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const pizzaSizesData = {
-    "Margherita": { "Petite": 11, "Moyenne": 15, "1/2 Moyenne": 7.5, "Large": 19, "1/2 Large": 9.5, "1/4 m": 12, "1/2 mètre": 13, "1 mètre": 17 },
-    "Tuna": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 26, "1/2 Large": 13, "1/4 m": 14.5, "1/2 mètre": 22, "1 mètre": 32 },
+    "Margherita": { "Petite": 11, "Moyenne": 15, "1/2 Moyenne": 7.5, "Large": 19, "1/2 Large": 9.5, "1/4 m": 13, "1/2 mètre": 26, "1 mètre": 52 },
+    "Tuna": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 26, "1/2 Large": 13, "1/4 m": 14.5, "1/2 mètre": 29, "1 mètre": 58 },
     "4 Seasons": { "Petite": 14.5, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
-    "Vegetarien": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
-    "Queen": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
-    "Marguerita": { "Petite": 11, "Moyenne": 15, "1/2 Moyenne": 7.5, "Large": 23, "1/2 Large": 11.5, "1/4 m": 13, "1/2 mètre": 13, "1 mètre": 23 },
-    "Orientale": { "Petite": 12, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 23, "1/2 Large": 11.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 24 },
-    "Pepperoni": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
+    "Vegetarien": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 29, "1 mètre": 58 },
+    "Queen": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
+    "Marguerita": { "Petite": 11, "Moyenne": 15, "1/2 Moyenne": 7.5, "Large": 23, "1/2 Large": 11.5, "1/4 m": 13, "1/2 mètre": 26, "1 mètre": 52 },
+    "Orientale": { "Petite": 12, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 23, "1/2 Large": 11.5, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
+    "Pepperoni": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 29, "1 mètre": 58 },
     "Chicken Supreme": { "Petite": 15, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
-    "4 Cheese": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 17, "1 mètre": 32 },
-    "Regina": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 14, "1 mètre": 28 },
+    "4 Cheese": { "Petite": 12.5, "Moyenne": 17.5, "1/2 Moyenne": 8.75, "Large": 28, "1/2 Large": 14, "1/4 m": 14.5, "1/2 mètre": 29, "1 mètre": 58 },
+    "Regina": { "Petite": 12, "Moyenne": 17, "1/2 Moyenne": 8.5, "Large": 25, "1/2 Large": 12.5, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
     "Chicken Grilli": { "Petite": 13, "Moyenne": 20, "1/2 Moyenne": 10, "Large": 29, "1/2 Large": 14.5, "1/4 m": 14, "1/2 mètre": 28, "1 mètre": 56 },
-    "Mexicain": { "Petite": 13, "Moyenne": 20, "1/2 Moyenne": 10, "Large": 29, "1/2 Large": 14.5, "1/4 m": 15, "1/2 mètre": 29, "1 mètre": 58 },
+    "Mexicain": { "Petite": 13, "Moyenne": 20, "1/2 Moyenne": 10, "Large": 29, "1/2 Large": 14.5, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
     "Kentucky": { "Petite": 14, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 30, "1/2 Large": 15, "1/4 m": 15, "1/2 mètre": 30, "1 mètre": 60 },
-    "Norwegian": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
-    "Sea Food": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 35, "1 mètre": 70 },
-    "Newton": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
-    "Einstein": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
-    "Barlow": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 15.5, "1 mètre": 32 },
-    "Millikan": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 16, "1 mètre": 32 },
-    "Ampere": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32 },
-    "Gauss": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 16, "1 mètre": 32 },
-    "John Locke": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 16, "1 mètre": 32 },
-    "Pesto": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 16, "1 mètre": 32 },
-    "Chicken Spicy": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 16, "1 mètre": 32 },
-    "Carnot": { "Petite": 15.5, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 17.5, "1/2 mètre": 17.5, "1 mètre": 32 },
-    "Mariotte": { "Petite": 14.5, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32 },
-    "Kepler": { "Petite": 14, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 17, "1 mètre": 32 },
-    "Van der waals": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16.5, "1/2 mètre": 16.5, "1 mètre": 32 },
-    "Tesla": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 17, "1 mètre": 32 },
-    "The Wise": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 17, "1 mètre": 32 }
+    "Norwegian": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 38, "1 mètre": 76 },
+    "Sea Food": { "Petite": 17, "Moyenne": 27, "1/2 Moyenne": 13.5, "Large": 35, "1/2 Large": 17.5, "1/4 m": 19, "1/2 mètre": 38, "1 mètre": 76 },
+    "Newton": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 31, "1 mètre": 62 },
+    "Einstein": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 31, "1 mètre": 62 },
+    "Barlow": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 15.5, "1/2 mètre": 31, "1 mètre": 62 },
+    "Millikan": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "Ampere": { "Petite": 18, "Moyenne": 29, "1/2 Moyenne": 14.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+    "Gauss": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "John Locke": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "Pesto": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "Chicken Spicy": { "Petite": 13, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 16, "1/2 mètre": 32, "1 mètre": 64 },
+    "Carnot": { "Petite": 15.5, "Moyenne": 22, "1/2 Moyenne": 11, "Large": 32, "1/2 Large": 16, "1/4 m": 17.5, "1/2 mètre": 35, "1 mètre": 70 },
+    "Mariotte": { "Petite": 14.5, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+    "Kepler": { "Petite": 14, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 },
+    "Van der waals": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 16.5, "1/2 mètre": 33, "1 mètre": 66 },
+    "Tesla": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 },
+    "The Wise": { "Petite": 13, "Moyenne": 21, "1/2 Moyenne": 10.5, "Large": 32, "1/2 Large": 16, "1/4 m": 17, "1/2 mètre": 34, "1 mètre": 68 }
   };
 
   // Pizza descriptions mapping
@@ -412,7 +420,8 @@ const MenuSection = () => {
             { name: "Crevettes Panées", price: "25dt" }
           ]
         }
-      ]
+      ],
+      image: saladImg
     },
     {
       title: "🥩 Plats Principaux",
@@ -448,7 +457,8 @@ const MenuSection = () => {
             { name: "Roquefort", price: "7dt" }
           ]
         }
-      ]
+      ],
+      image: platsImg
     },
     {
       title: "🦞 Fruits de Mer",
@@ -482,7 +492,8 @@ const MenuSection = () => {
     {
       title: "🍕 Pizzas",
       isPizza: true,
-      pizzas: Object.keys(pizzaSizesData)
+      pizzas: Object.keys(pizzaSizesData),
+      images: [pizza1Img, pizza2Img]
     },
     {
       title: "🥪 Sandwiches",
@@ -550,7 +561,8 @@ const MenuSection = () => {
         { name: "Big Cheese Burger", price: "21dt" },
         { name: "Americain Burger", price: "19dt" },
         { name: "The Wise Burger", price: "22dt" }
-      ]
+      ],
+      image: burgerImg
     },
     {
       title: "🍗 Chicken Box",
@@ -734,7 +746,8 @@ const MenuSection = () => {
             { name: "Energy Drink", price: "8.8dt" }
           ]
         }
-      ]
+      ],
+      image: drinkImg
     }
   ];
 
@@ -862,6 +875,21 @@ const MenuSection = () => {
                         </div>
                       ))}
                     </div>
+                    {category.images && (
+                      <div className="hidden lg:flex flex-col gap-4 items-center justify-center">
+                        {category.images.map((img: string, imgIndex: number) => (
+                          <img 
+                            key={imgIndex}
+                            src={img} 
+                            alt={`${category.title} ${imgIndex + 1}`}
+                            className="max-w-2xl w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                            style={{
+                              filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="grid lg:grid-cols-2 gap-6">
@@ -962,6 +990,19 @@ const MenuSection = () => {
                         </div>
                       ))}
                     </div>
+                    {/* Single image */}
+                    {category.image && (
+                      <div className="hidden lg:flex items-center justify-center">
+                        <img 
+                          src={category.image} 
+                          alt={category.title}
+                          className="max-w-md w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
+                          style={{
+                            filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

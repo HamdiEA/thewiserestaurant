@@ -1,4 +1,4 @@
-import { MapPin, Phone, Clock } from "lucide-react";
+import { MapPin, Phone, Clock, Star, Facebook } from "lucide-react";
 
 const Footer = () => {
   const locations = [
@@ -13,19 +13,20 @@ const Footer = () => {
       name: "Ben Arous Tunis", 
       phone: "94 722 566", 
       address: "COMPLEXE COMMERCIAL AV HABIB BOURGUIBA - BEN AROUS",
+      maps: "https://maps.app.goo.gl/wd9MgJQgfEfK6JiS6",
       facebook: ""
     },
     { 
       name: "Ksar Hellal Monastir", 
       phone: "52 555 400", 
       address: "AV HAJ ALI SOUA KSAR HELLAL - MONASTIR",
-      maps: "https://maps.app.goo.gl/wd9MgJQgfEfK6JiS6",
+      maps: "",
       facebook: "https://www.facebook.com/profile.php?id=100058908593379"
     }
   ];
 
   return (
-   <footer className="bg-warm-neutral text-white py-12">
+    <footer className="bg-warm-neutral text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
@@ -106,4 +107,5 @@ const Footer = () => {
     </footer>
   );
 };
+
 export default Footer;

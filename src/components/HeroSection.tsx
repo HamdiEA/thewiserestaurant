@@ -26,7 +26,7 @@ const HeroSection = () => {
           The Wise
         </h1>
         <p className="text-2xl md:text-3xl mb-4 opacity-95 drop-shadow-lg">
-          Restaurant & Brunch
+          Restaurant
         </p>
         <p className="text-lg md:text-xl mb-8 opacity-85 max-w-2xl mx-auto drop-shadow-md">
           Choose Your Food Wisely - Experience exceptional cuisine across our three locations in Tunisia

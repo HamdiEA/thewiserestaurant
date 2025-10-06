@@ -13,14 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Food images
-import saladImg from "@/assets/salad.jpg";
-import platsImg from "@/assets/plats.jpg";
-import pizza1Img from "@/assets/pizza1.jpg";
-import pizza2Img from "@/assets/pizza2.jpg";
-import burgerImg from "@/assets/burger.jpg";
-import drinkImg from "@/assets/drink.jpg";
-
 interface OrderItem {
   name: string;
   size?: string;
@@ -420,8 +412,7 @@ const MenuSection = () => {
             { name: "Crevettes Panées", price: "25dt" }
           ]
         }
-      ],
-      image: saladImg
+      ]
     },
     {
       title: "🥩 Plats Principaux",
@@ -457,8 +448,7 @@ const MenuSection = () => {
             { name: "Roquefort", price: "7dt" }
           ]
         }
-      ],
-      image: platsImg
+      ]
     },
     {
       title: "🦞 Fruits de Mer",
@@ -492,8 +482,7 @@ const MenuSection = () => {
     {
       title: "🍕 Pizzas",
       isPizza: true,
-      pizzas: Object.keys(pizzaSizesData),
-      images: [pizza1Img, pizza2Img]
+      pizzas: Object.keys(pizzaSizesData)
     },
     {
       title: "🥪 Sandwiches",
@@ -561,8 +550,7 @@ const MenuSection = () => {
         { name: "Big Cheese Burger", price: "21dt" },
         { name: "Americain Burger", price: "19dt" },
         { name: "The Wise Burger", price: "22dt" }
-      ],
-      image: burgerImg
+      ]
     },
     {
       title: "🍗 Chicken Box",
@@ -746,8 +734,7 @@ const MenuSection = () => {
             { name: "Energy Drink", price: "8.8dt" }
           ]
         }
-      ],
-      image: drinkImg
+      ]
     }
   ];
 
@@ -760,16 +747,16 @@ const MenuSection = () => {
   };
 
   return (
-    <section id="menu" className="py-16 bg-warm-bg relative overflow-hidden">
+    <section id="menu" className="py-16 bg-gray-50 relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-restaurant-red/5 to-transparent pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-50 to-transparent pointer-events-none"></div>
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-warm-neutral mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             Notre Menu Complet
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-gray-600 text-lg">
             Découvrez notre sélection de plats délicieux
           </p>
         </div>
@@ -798,7 +785,7 @@ const MenuSection = () => {
 
         <div className="grid gap-8">
           {menuCategories.map((category, index) => (
-            <Card key={index} className="shadow-lg border-2 border-border/50" style={{ animationDelay: `${index * 0.1}s` }}>
+            <Card key={index} className="shadow-lg border-2 border-gray-200">
               <CardHeader className="bg-gradient-to-r from-red-600 to-red-700 text-white">
                 <CardTitle className="text-2xl font-bold text-center">
                   {category.title}
@@ -812,11 +799,11 @@ const MenuSection = () => {
                   <div className="grid lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       {category.pizzas?.map((pizzaName: string, pizzaIndex: number) => (
-                        <div key={pizzaIndex} className="p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
-                          <h4 className="font-semibold text-lg text-warm-neutral mb-1">
+                        <div key={pizzaIndex} className="p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-all duration-200 rounded-lg">
+                          <h4 className="font-semibold text-lg text-gray-800 mb-1">
                             {pizzaName}
                           </h4>
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <p className="text-sm text-gray-600 mb-3">
                             {pizzaDescriptions[pizzaName as keyof typeof pizzaDescriptions]}
                           </p>
                           <div className="flex flex-col gap-3">
@@ -875,36 +862,21 @@ const MenuSection = () => {
                         </div>
                       ))}
                     </div>
-                    {category.images && (
-                      <div className="hidden lg:flex flex-col gap-4 items-center justify-center">
-                        {category.images.map((img: string, imgIndex: number) => (
-                          <img 
-                            key={imgIndex}
-                            src={img} 
-                            alt={`${category.title} ${imgIndex + 1}`}
-                            className="max-w-2xl w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
-                            style={{
-                              filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <div className="grid lg:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       {category.description && (
-                        <p className="text-sm text-muted-foreground italic mb-4">{category.description}</p>
+                        <p className="text-sm text-gray-600 italic mb-4">{category.description}</p>
                       )}
                       {category.items && category.items.map((item: any, itemIndex: number) => (
-                        <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
+                        <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-all duration-200 rounded-lg">
                           <div className="flex-1">
-                            <h4 className="font-semibold text-lg text-warm-neutral">
+                            <h4 className="font-semibold text-lg text-gray-800">
                               {item.name}
                             </h4>
                             {item.description && (
-                              <p className="text-muted-foreground text-sm mt-1">
+                              <p className="text-gray-600 text-sm mt-1">
                                 {item.description}
                               </p>
                             )}
@@ -915,7 +887,7 @@ const MenuSection = () => {
                                 {item.price}
                               </Badge>
                             )}
-                            <div className="flex items-center gap-1 bg-muted rounded-full p-1">
+                            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -946,13 +918,13 @@ const MenuSection = () => {
                             {section.subtitle}
                           </h3>
                           {section.items.map((item: any, itemIndex: number) => (
-                            <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-border/50 last:border-b-0 hover:bg-muted/30 transition-all duration-200 rounded-lg">
+                            <div key={itemIndex} className="flex justify-between items-start p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-all duration-200 rounded-lg">
                               <div className="flex-1">
-                                <h4 className="font-semibold text-lg text-warm-neutral">
+                                <h4 className="font-semibold text-lg text-gray-800">
                                   {item.name}
                                 </h4>
                                 {item.description && (
-                                  <p className="text-muted-foreground text-sm mt-1">
+                                  <p className="text-gray-600 text-sm mt-1">
                                     {item.description}
                                   </p>
                                 )}
@@ -963,7 +935,7 @@ const MenuSection = () => {
                                     {item.price}
                                   </Badge>
                                 )}
-                                <div className="flex items-center gap-1 bg-muted rounded-full p-1">
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
                                   <Button
                                     size="icon"
                                     variant="ghost"
@@ -990,19 +962,6 @@ const MenuSection = () => {
                         </div>
                       ))}
                     </div>
-                    {/* Single image */}
-                    {category.image && (
-                      <div className="hidden lg:flex items-center justify-center">
-                        <img 
-                          src={category.image} 
-                          alt={category.title}
-                          className="max-w-md w-full h-auto object-contain rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105"
-                          style={{
-                            filter: 'contrast(1.1) saturate(1.15) brightness(1.05)',
-                          }}
-                        />
-                      </div>
-                    )}
                   </div>
                 )}
               </CardContent>

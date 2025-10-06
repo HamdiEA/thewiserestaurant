@@ -25,15 +25,15 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-warm-neutral text-white py-12">
+   <footer className="bg-warm-neutral text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-restaurant-red to-restaurant-red-light text-white px-4 py-2 rounded-lg font-bold text-xl inline-block">
+            <h3 className="text-restaurant-red-light font-bold text-2xl">
               The Wise
-            </div>
-            <p className="text-white/80">
+            </h3>
+            <p className="text-white/80 font-medium">
               Restaurant
             </p>
             <p className="text-white/70 text-sm">
@@ -60,6 +60,32 @@ const Footer = () => {
                     {location.phone}
                   </span>
                 </div>
+                <div className="flex items-center space-x-3 mt-2">
+                  {location.maps && (
+                    <a 
+                      href={location.maps} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-white/80 hover:text-restaurant-red-light transition-colors"
+                      title="Voir sur Google Maps"
+                    >
+                      <Star className="h-4 w-4" />
+                      <span className="text-xs">Avis</span>
+                    </a>
+                  )}
+                  {location.facebook && (
+                    <a 
+                      href={location.facebook} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-1 text-white/80 hover:text-restaurant-red-light transition-colors"
+                      title="Page Facebook"
+                    >
+                      <Facebook className="h-4 w-4" />
+                      <span className="text-xs">Facebook</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -80,5 +106,4 @@ const Footer = () => {
     </footer>
   );
 };
-
 export default Footer;
